@@ -242,7 +242,7 @@ namespace qtReminder.Nyaa
             var episodeResultCollection = Regex.Matches(title, "([^-]+$)", RegexOptions.Multiline);
             var episodeResult = episodeResultCollection[episodeResultCollection.Count - 1];
 
-            titleEnd = episodeResult.Index - 3; // - 3 because the title also include " - ", and that needs to go.
+            titleEnd = episodeResult.Index - 2; // - 3 because the title also include " - ", and that needs to go.
             //if (titleEnd < 0) titleEnd = titleStart * 2  + 1;
             string episodeString = episodeResult.Value.Trim().Split(" ")[0];
             

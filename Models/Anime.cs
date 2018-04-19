@@ -41,9 +41,9 @@
 
     public enum Quality
     {
-        x480,
-        x720,
-        x1080,
-        Unknown
+        x480 = 1,
+        x720 = 0,
+        x1080 = 2,
+        Unknown = -1
     }
 }
