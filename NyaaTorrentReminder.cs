@@ -250,6 +250,7 @@ namespace qtReminder.Nyaa
 
             int length = titleEnd - titleStart;
             if (length < 0) length = 1;
+            if (title.Length <= titleStart + length) return new ParsedAnime("", -1, "", Quality.Unknown);
             anime_title = title.Substring(titleStart, length).Trim();
             
             
@@ -297,7 +298,7 @@ namespace qtReminder.Nyaa
 
                 if (!@checked)
                 {
-                    ReminderOptions.LatestChecked = infoHash;
+                    //ReminderOptions.LatestChecked = infoHash;
                     @checked = true;
                 }
 
@@ -332,7 +333,7 @@ namespace qtReminder.Nyaa
         {
             using (var hClient = new HttpClient())
             {
-                HttpRequestMessage message = new HttpRequestMessage(HttpMethod.Get, "https://nyaa.at/?page=rss");
+                HttpRequestMessage message = new HttpRequestMessage(HttpMethod.Get, "https://nyaa.si/?page=rss");
                 var asd = await hClient.SendAsync(message);
                 var xml = await asd.Content.ReadAsStringAsync();
 
