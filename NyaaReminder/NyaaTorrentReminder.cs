@@ -11,7 +11,7 @@ using qtReminder.Models;
 
 namespace qtReminder.Nyaa
 {
-    public class TorrentReminder
+    public partial class TorrentReminder
     {
         private const string OPTIONS_FILENAME = "nyaaoptions.json";
         
@@ -23,174 +23,46 @@ namespace qtReminder.Nyaa
             Client = client;
             ReminderOptions = TorrentReminderOptions.LoadReminders(OPTIONS_FILENAME);
         }
-
-        public async Task ReceiveNyaaMessage(SocketMessage socketMessage)
-        {
-            var message = socketMessage as Discord.IMessage;
-
-            if (!message.MentionedUserIds.Contains(Client.CurrentUser.Id)) return;
-            
-            var subCommand = SubscribeCommand(message.Content);
-
-            if (subCommand.Item1 == -1) return;
-            
-            // Check if the channel the message was sent in is public.
-            if (!(message.Channel is IGuildChannel))
-            {
-                await message.Channel.SendMessageAsync("no");
-                return;
-            }
-
-            switch (subCommand.Item1)
-            {
-                case 1:
-                    await SubscribeToAnime(subCommand.Item2.ToLower(), message.Author, message.Channel as ITextChannel);
-                    break;
-                case 0:
-                    await UnsubscribeToAnime(subCommand.Item2.ToLower(), message.Author, message.Channel as ITextChannel);
-                    break;
-                default:
-                    await message.Channel.SendMessageAsync(" what ");
-                    break;
-            }
-                
-            TorrentReminderOptions.SaveReminders(OPTIONS_FILENAME, ReminderOptions, true);
-        }
-
-        private async Task SubscribeToAnime(string animeTitle, IUser user, ITextChannel channel)
-        {
-            // Helper function for sending a message if the user has been subscribed.
-            async Task SendSubscribeMessage(AnimeChannel anime)
-            {
-                var message = await channel.SendMessageAsync(
-                    $"{user.Mention}, you have been subscribed to {anime.Anime.Name}. " +
-                    $"And will get notifications if I detect any new torrents by that name!\n" +
-                    $"`subgroup: {anime.Anime.Subgroup} & quality: {anime.Anime.MinQuality.ToString()}`\n" +
-                    $"Click the `🔴` to subscribe to this as well. `error: not yet implemented you fucking braindead idiot.`");
-                await message.AddReactionAsync(new Emoji("🔴"));
-            }
-
-            // check if this server is already subscribed to this anime...
-            // if not, make it!! yes!!!
-            // if he is, subscribe him to it.
-
-            foreach (var anime in ReminderOptions.SubscribedAnime)
-            {
-                if (!anime.Anime.Name.ToLower().Contains(animeTitle) || anime.Guild != channel.GuildId) continue;
-                
-                bool succeeded = anime.SubscribeUser(user.Id);
-
-                if (!succeeded)
-                {
-                    await channel.SendMessageAsync($"{user.Mention}     `Something we`nt fucking wroṇ̦͔̈̍̑g!!");
-                    return;
-                }
-
-                await SendSubscribeMessage(anime);
-                return;
-            }
-            
-            Anime animeSub = new Anime(animeTitle);
-            AnimeChannel animeToSubscribe = new AnimeChannel()
-            {
-                Guild = channel.GuildId,
-                Channel = channel.Id,
-                Anime = animeSub
-            };
-            //channel.GuildId, channel.Id, animeSub)
-            animeToSubscribe.SubscribeUser(user.Id);
-            ReminderOptions.SubscribedAnime.Add(animeToSubscribe);
-            
-            await SendSubscribeMessage(animeToSubscribe);
-            
-        }
-
-        private async Task UnsubscribeToAnime(string animeTitle, IUser user, ITextChannel channel)
-        {
-            // check if this server is subscribed to this anime
-            // if not, what the fuck are you doing here? Fucking balbino. Stupid fucking idiot.
-
-            if (ReminderOptions.SubscribedAnime.Count != 0)
-            {
-                await channel.SendMessageAsync("There are no subscriptions anywhere. You fucking braindead idiot. Fuck you.");
-                return;
-            }
-
-            foreach (var anime in ReminderOptions.SubscribedAnime)
-            {
-                if (anime.Guild != channel.GuildId || !anime.Anime.Name.ToLower().Contains(animeTitle)) return;
-
-                anime.UnsubscribeUser(user.Id);
-
-                if (anime.SubscribedUsers.Count == 0)
-                {
-                    ReminderOptions.SubscribedAnime.Remove(anime);
-                }
-
-                await channel.SendMessageAsync(
-                    $"{user.Mention} You have been unsubscribed from receiving new notifications when a new episode of " +
-                    $"{anime.Anime.Name} goes online!");
-            }
-        }
-
-        /// <summary>
-        /// Will look at the second word, to see if it's subscribe or unsubscribe.
-        /// too lazy to make an enum for this.
-        /// </summary>
-        /// <param name="content">content of the message</param>
-        /// <returns>returns -1 if nothing was found, 1 if it's subscribe, or 0 if it's unsubscribe. Together the first two words cut out.</returns>
-        private (int, string) SubscribeCommand(string content)
-        {
-            string[] splitContent = content.Split(" ");
-
-            if (splitContent.Length < 3) return (-1, null);
-
-            string returnString = content.Substring(splitContent[0].Length + splitContent[1].Length + 2).Trim();
-
-            switch (splitContent[1].ToLower())
-            {
-                case "sub":
-                case "subscribe":
-                    return (1, returnString);
-                case "unsub":
-                case "unsubscribe":
-                    return (0, returnString);
-                default:
-                    return (-1, returnString);
-            }
-        }
         
         public async Task RepeatCheck()
         {
             while (true)
             {
-                const int CheckEvery_Minute = 2;
-                
-                if (ReminderOptions.SubscribedAnime.Count == 0)
+                try
                 {
-                    await Task.Delay(TimeSpan.FromSeconds(1));
-                    continue;
-                }
-                
-                Console.WriteLine("Checking anime ...");
-                var xml = await GetNyaaRSSAsXML();
-                var recentAnime = GetRecentNyaaAnime(xml);
+                    const int CheckEvery_Minute = 2;
 
-                if (recentAnime.Count != 0)
-                {
-                    var animeChannels = ParseAnimeChannels(recentAnime);
-
-                    if (animeChannels.Count != 0)
+                    if (ReminderOptions.SubscribedAnime.Count == 0)
                     {
-                        Console.WriteLine($"New anime spotted for {animeChannels.Count} channels! Notifying them all!");
-                        animeChannels.ForEach(x => x.AnimeChannel.NotifyUsers(Client, x.ParsedAnime.Episode, 
-                            x.AnimeChannel.CurrentAnimeTorrent, x.ParsedAnime));
+                        await Task.Delay(TimeSpan.FromSeconds(1));
+                        continue;
                     }
-                }
 
-                TorrentReminderOptions.SaveReminders(OPTIONS_FILENAME, ReminderOptions, true);
-                
-                await Task.Delay(TimeSpan.FromMinutes(CheckEvery_Minute));
+                    Console.WriteLine($"{StringHelper.GetDateTimeString()} Checking anime ...");
+                    var xml = await GetNyaaRSSAsXML();
+                    var recentAnime = GetRecentNyaaAnime(xml);
+
+                    if (recentAnime.Count != 0)
+                    {
+                        var animeChannels = ParseAnimeChannels(recentAnime);
+
+                        if (animeChannels.Count != 0)
+                        {
+                            Console.WriteLine(
+                                $"{StringHelper.GetDateTimeString()} New anime in {animeChannels.Count} channels.");
+                            animeChannels.ForEach(x => x.AnimeChannel.NotifyUsers(Client, x.ParsedAnime.Episode,
+                                x.AnimeChannel.CurrentAnimeTorrent, x.ParsedAnime));
+                        }
+                    }
+
+                    TorrentReminderOptions.SaveReminders(OPTIONS_FILENAME, ReminderOptions, true);
+
+                    await Task.Delay(TimeSpan.FromMinutes(CheckEvery_Minute));
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
             }
         }
 

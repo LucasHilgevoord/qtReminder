@@ -59,6 +59,7 @@ namespace qtReminder.Models
                 .WithTitle($"{parsedAnime.Title.FirstLettersToUpper()} - Ep. {parsedAnime.Episode} has been released!")
                 .AddField("size", nyaaAnimeObject.Size, true)
                 .WithUrl(nyaaAnimeObject.Link)
+                .WithColor(Color.Red)
                 .AddField("Sub group", ac.Anime.Subgroup, true);
 
             return builder.Build();

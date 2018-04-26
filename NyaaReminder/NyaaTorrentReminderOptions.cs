@@ -36,7 +36,7 @@ namespace qtReminder.Nyaa
             {
                 string json = JsonConvert.SerializeObject(options, Formatting.None);
                 sw.Write(json);
-                if(verbose) Console.WriteLine($"Successfully saved options to {filename}.");
+                if(verbose) Console.WriteLine($"{StringHelper.GetDateTimeString()} Successfully saved options to {filename}.");
             }
         }
     }
