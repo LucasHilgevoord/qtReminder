@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Discord;
@@ -36,6 +38,38 @@ namespace qtReminder
             
             var reminder = new Nyaa.TorrentReminder(_client);
             await Task.Factory.StartNew(() => reminder.RepeatCheck());
+            
+            _client.GuildAvailable += async (guild) =>
+            {
+                if (guild.Id != 172734552119312384) return;
+                
+                foreach (var user in guild.Users)
+                {
+                    try
+                    {
+                        if (user.Roles.Any(x=>x.Id == 361575094440689674)) continue;
+                        await user.ModifyAsync(x =>
+                        {
+                            var roles = x.RoleIds.Value.ToList();
+                            roles.Add(361575094440689674);
+                            x.RoleIds = roles;
+                        });
+                        Console.WriteLine($"Added role {user.Guild.GetRole(361575094440689674)?.Name} to {user.Username}");
+                    }
+                    catch (Exception)
+                    {
+                        continue; 
+                    }
+                }
+            };
+            
+
+            _client.GuildMemberUpdated += async (olduser, user) =>
+            {
+                if (user.Guild.Id != 172734552119312384) return;
+
+                await Task.Factory.StartNew(() => UpdateUser(user));
+            };
 
             _client.MessageReceived += async (msg) =>
             {
@@ -49,6 +83,21 @@ namespace qtReminder
             
             Console.WriteLine("Running bot");
             await Task.Delay(-1);
+        }
+
+        private async Task UpdateUser(SocketGuildUser user)
+        {
+            try
+            {
+                if (user.Roles.Any(x => x.Id == 361575094440689674)) return;
+                var role = user.Guild.GetRole(361575094440689674);
+                await user.AddRoleAsync(role);
+                Console.WriteLine($"Added role {role.Name} to {user.Username}");
+            }
+            catch (Exception ex)
+            {
+                return;
+            }
         }
 
         public dynamic GetSettings()
