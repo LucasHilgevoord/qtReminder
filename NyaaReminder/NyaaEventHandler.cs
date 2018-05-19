@@ -44,8 +44,6 @@ namespace qtReminder.Nyaa
         public async Task ReceiveReaction(Cacheable<IUserMessage, ulong> a, ISocketMessageChannel b,
             SocketReaction reaction)
         {
-            // do stuff
-            return;
         }
         
     }

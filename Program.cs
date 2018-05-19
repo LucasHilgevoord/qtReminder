@@ -45,9 +45,9 @@ namespace qtReminder
             };
 
             _client.ReactionAdded += async (cacheable, channel, reaction) =>
-            {
-                //await Task.Factory.StartNew(() => )
-            };
+                {
+                    await Task.Factory.StartNew(() => reminder.ReceiveReaction(cacheable, channel, reaction));
+                };
             
             Console.WriteLine("Running bot");
             await Task.Delay(-1);
