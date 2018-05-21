@@ -3,6 +3,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using Discord;
 using Discord.WebSocket;
+using qtReminder.ImageSearch;
 
 namespace qtReminder.Models
 {
@@ -55,11 +56,14 @@ namespace qtReminder.Models
         /// <returns> what? </returns>
         private static Embed CreateEmbed(this AnimeChannel ac, int episode, NyaaAnime nyaaAnimeObject, ParsedAnime parsedAnime)
         {
+            string imageUrl = DuckDuckGoImageSearch.SearchImage(parsedAnime.Title)[0];
+            
             EmbedBuilder builder = new EmbedBuilder()
                 .WithTitle($"{parsedAnime.Title.FirstLettersToUpper()} - Ep. {parsedAnime.Episode} has been released!")
                 .AddField("size", nyaaAnimeObject.Size, true)
                 .WithUrl(nyaaAnimeObject.Link)
                 .WithColor(Color.Red)
+                .WithImageUrl(imageUrl)
                 .AddField("Sub group", ac.Anime.Subgroup, true);
 
             return builder.Build();

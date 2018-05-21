@@ -7,13 +7,17 @@ using Discord;
 using Discord.WebSocket;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using qtReminder.ImageSearch;
 using qtReminder.Models;
 
 namespace qtReminder
 {
     class Program
     {
-        static void Main(string[] args) => new Program().RunBot().GetAwaiter().GetResult();
+        static void Main(string[] args)
+        {
+            new Program().RunBot().GetAwaiter().GetResult();  
+        } 
 
 
         private DiscordSocketClient _client;
