@@ -32,6 +32,8 @@ namespace qtReminder.Models
         
         public void AddQualityLink(Quality quality, string link)
         {
+            if(QualityLinks == null) ResetQualityLinks();
+            
             if (QualityLinks.Any(x => x.Key == quality))
             {
                 int index = QualityLinks.FindIndex(x => x.Key == quality);
