@@ -38,7 +38,6 @@ namespace qtReminder.Nyaa
                         continue;
                     }
 
-                    Console.WriteLine($"{StringHelper.GetDateTimeString()} Checking anime ...");
                     var xml = await GetNyaaRSSAsXML();
                     var recentAnime = GetRecentNyaaAnime(xml);
 
@@ -50,12 +49,12 @@ namespace qtReminder.Nyaa
                         {
                             Console.WriteLine(
                                 $"{StringHelper.GetDateTimeString()} New anime in {animeChannels.Count} channels.");
-                            animeChannels.ForEach(x => x.AnimeChannel.NotifyUsers(Client, x.ParsedAnime.Episode,
-                                x.AnimeChannel.CurrentAnimeTorrent, x.ParsedAnime));
+                            animeChannels.ForEach(x => x.parsedAnimeChannel.AnimeChannel.CreateOrUpdateMessage(Client,
+                                x.nyaaAnime, x.parsedAnimeChannel.ParsedAnime));
                         }
                     }
 
-                    TorrentReminderOptions.SaveReminders(OPTIONS_FILENAME, ReminderOptions, true);
+                    TorrentReminderOptions.SaveReminders(OPTIONS_FILENAME, ReminderOptions);
 
                     await Task.Delay(TimeSpan.FromMinutes(CheckEvery_Minute));
                 }
@@ -71,9 +70,9 @@ namespace qtReminder.Nyaa
         /// </summary>
         /// <param name="list"></param>
         /// <returns>New episodes of people that are subscribed.</returns>
-        private List<ParsedAnimeChannel> ParseAnimeChannels(List<NyaaAnime> list)
+        private List<TorrentAndParsedChannel> ParseAnimeChannels(List<NyaaAnime> list)
         {
-            var animeList = new List<ParsedAnimeChannel>();
+            var animeList = new List<TorrentAndParsedChannel>();
 
             foreach (var nAnime in list)
             {
@@ -82,16 +81,25 @@ namespace qtReminder.Nyaa
                     FirstOrDefault(x=>parsedTitle.Title.ToLower().Contains(x.Anime.Name.ToLower()));
 
                 if (anime == null || 
-                    anime.LatestEpisode >= parsedTitle.Episode || 
-                    anime.Anime.MinQuality != parsedTitle.Quality || 
+                    anime.LatestEpisode > parsedTitle.Episode || 
                     parsedTitle.Fangroup.ToLower() != anime.Anime.Subgroup.ToLower()) continue;
 
-
-                anime.CurrentAnimeTorrent = nAnime;
-                animeList.Add(new ParsedAnimeChannel(parsedTitle, anime));
+                animeList.Add(new TorrentAndParsedChannel(nAnime, new ParsedAnimeChannel(parsedTitle, anime)));
             }
 
             return animeList;
+        }
+
+        struct TorrentAndParsedChannel
+        {
+            public NyaaAnime nyaaAnime;
+            public ParsedAnimeChannel parsedAnimeChannel;
+
+            public TorrentAndParsedChannel(NyaaAnime a, ParsedAnimeChannel b)
+            {
+                nyaaAnime = a;
+                parsedAnimeChannel = b;
+            }
         }
 
         /// <summary>

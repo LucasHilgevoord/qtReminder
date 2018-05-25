@@ -54,6 +54,5 @@ def printJson(objs):
         
 a = sys.argv
 a.pop(0)
-s = " ".join(a)        
-print(s)        
+s = " ".join(a)    
 search(s)
