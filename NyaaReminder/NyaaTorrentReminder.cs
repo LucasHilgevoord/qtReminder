@@ -52,7 +52,8 @@ namespace qtReminder.Nyaa
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine($"oh no :{e.Message}");
+                    Console.WriteLine($"[Error] :: {e.Message}");
+                    Console.WriteLine($"{e.StackTrace}");
                 }
         }
 
