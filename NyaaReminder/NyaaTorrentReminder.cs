@@ -79,7 +79,7 @@ namespace qtReminder.Nyaa
                     // if the this episode is not new... skip it as well.
                     anime.LatestEpisode > parsedTitle.Episode ||
                     // if the parsed subgroup does not contain the wanted subgroup, skip this.
-                    anime.AnimePreference.Subgroups.Any(x => x.ToLower() != parsedTitle.Fangroup.ToLower())) continue;
+                    anime.AnimePreference.Subgroups.All(x => x.ToLower() != parsedTitle.Fangroup.ToLower())) continue;
                 // conditions end.
 
 

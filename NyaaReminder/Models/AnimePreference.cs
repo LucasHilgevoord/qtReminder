@@ -31,6 +31,7 @@ namespace qtReminder.Models
         /// <summary>
         ///     The name of the anime being subscribed to
         /// </summary>
+        [JsonProperty("Name")]
         public string Name { get; private set; }
 
         /// <summary>
@@ -52,12 +53,12 @@ namespace qtReminder.Models
 
     public enum Quality
     {
-        x480 = 1,
+        x480 = 0,
         
-        x720 = 2,
+        x720 = 1,
         
-        x1080 = 3,
+        x1080 = 2,
         
-        Unknown = 0
+        Unknown = -1
     }
 }
