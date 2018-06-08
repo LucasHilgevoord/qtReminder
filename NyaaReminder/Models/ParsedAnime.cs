@@ -1,5 +1,8 @@
 ﻿namespace qtReminder.Models
 {
+    /// <summary>
+    ///     An anime parsed from a Nyaa Torrent
+    /// </summary>
     public struct ParsedAnime
     {
         public string Title;
@@ -16,6 +19,9 @@
         }
     }
 
+    /// <summary>
+    ///     A mix of a parsed nyaa anime torrent, and an anime channel associated to it.
+    /// </summary>
     public struct ParsedAnimeChannel
     {
         public ParsedAnime ParsedAnime;

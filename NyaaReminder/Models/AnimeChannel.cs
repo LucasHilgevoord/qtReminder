@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection.Metadata.Ecma335;
-using System.Runtime.InteropServices;
-using System.Threading.Tasks;
+using System.Runtime.CompilerServices;
 using Discord;
 using Discord.WebSocket;
 using Newtonsoft.Json;
@@ -13,32 +11,33 @@ namespace qtReminder.Models
 {
     public class AnimeChannel
     {
-        public ulong Guild;
+        [JsonIgnore] private DateTime _lastMessagePostTime;
+
+        [JsonProperty("anime")]
+        public AnimePreference AnimePreference;
         public ulong Channel;
-        public List<ulong> SubscribedUsers = new List<ulong>();
-        public Anime Anime;
-        [JsonIgnore]
-        public NyaaAnime CurrentAnimeTorrent;
-        public int LatestEpisode;
+        public ulong Guild;
         public List<Quality> KnownQualities = new List<Quality>();
 
-        [JsonIgnore]
-        public List<KeyValuePair<Quality, string>> QualityLinks;
-        
-        [JsonIgnore]
-        public IUserMessage LastMessage;
-        [JsonIgnore]
-        private DateTime _lastMessagePostTime; 
-        
+        [JsonIgnore] public IUserMessage LastMessage;
+        [JsonIgnore] public bool alreadyNotified;
+
+        public int LatestEpisode;
+
+        [JsonIgnore] public List<KeyValuePair<Quality, string>> QualityLinks;
+
+        public List<ulong> SubscribedUsers = new List<ulong>();
+
         public void AddQualityLink(Quality quality, string link)
         {
-            if(QualityLinks == null) ResetQualityLinks();
-            
+            if (QualityLinks == null) ResetQualityLinks();
+
             if (QualityLinks.Any(x => x.Key == quality))
             {
-                int index = QualityLinks.FindIndex(x => x.Key == quality);
+                var index = QualityLinks.FindIndex(x => x.Key == quality);
                 QualityLinks[index] = new KeyValuePair<Quality, string>(quality, link);
             }
+
             QualityLinks.Add(new KeyValuePair<Quality, string>(quality, link));
 
             if (KnownQualities.Any(x => x == quality)) return;
@@ -49,10 +48,11 @@ namespace qtReminder.Models
         public void ResetQualityLinks()
         {
             QualityLinks = new List<KeyValuePair<Quality, string>>();
+            alreadyNotified = false;
         }
 
         /// <summary>
-        /// Sets the message and sets the date time to the curren time.
+        ///     Sets the message and sets the date time to the curren time.
         /// </summary>
         public void SetMessage(IUserMessage message)
         {
@@ -61,7 +61,7 @@ namespace qtReminder.Models
         }
 
         /// <summary>
-        /// Checks if the message is still valid. (true if newer than 20 minutes)
+        ///     Checks if the message is still valid. (true if newer than 20 minutes)
         /// </summary>
         public bool MessageValid()
         {
@@ -69,29 +69,28 @@ namespace qtReminder.Models
             return timespan.TotalMinutes < 20 && LastMessage != null;
         }
     }
-    
+
     public static class AnimeChannelExtensions
     {
         /// <summary>
-        /// This will post a link to the torrent in the subbed channels, and tag all the user that
-        /// are subscribed to it.
+        ///     This will post a link to the torrent in the subbed channels, and tag all the user that
+        ///     are subscribed to it.
         /// </summary>
         /// <param name="client">The discord client.</param>
-        public static void CreateOrUpdateMessage(this AnimeChannel ac, DiscordSocketClient client, 
-            NyaaAnime nyaaAnimeObject, ParsedAnime parsedAnime)
+        public static void CreateOrUpdateMessage(this AnimeChannel ac, DiscordSocketClient client,
+            NyaaTorrent nyaaTorrentObject, ParsedAnime parsedAnime)
         {
-            if (ac.LatestEpisode != parsedAnime.Episode)
-            {
-                ac.ResetQualityLinks();
-            }
+            if (ac.LatestEpisode != parsedAnime.Episode && ac.alreadyNotified) ac.ResetQualityLinks();
 
-            ac.AddQualityLink(parsedAnime.Quality, nyaaAnimeObject.Link);
+            ac.AddQualityLink(parsedAnime.Quality, nyaaTorrentObject.Link);
+
+            // If the quality of the torrent is lower than the actual
+            // minimum notify quality, dont beep them.
+            int minimumQuality = (int)ac.AnimePreference.MinQuality;
+            if (minimumQuality > (int) parsedAnime.Quality) return;
             
-            string tags = "";
-            foreach (var user in ac.SubscribedUsers)
-            {
-                tags += $"<@{user}> ";
-            }
+            var tags = "";
+            foreach (var user in ac.SubscribedUsers) tags += $"<@{user}> ";
 
             // If the last posted message is valid, and if the last message is not null.
             // Then edit the previous message posted.
@@ -99,63 +98,71 @@ namespace qtReminder.Models
             // latest checked episode.
             if (ac.MessageValid())
             {
-                ac.LastMessage?.ModifyAsync((x) => { x.Embed = ac.CreateEmbed(nyaaAnimeObject, parsedAnime); });
+                ac.LastMessage?.ModifyAsync(x => { x.Embed = ac.CreateEmbed(nyaaTorrentObject, parsedAnime); });
                 return;
-            } else if (ac.LatestEpisode >= parsedAnime.Episode) return;
-            
+            }
+
+            if (ac.LatestEpisode >= parsedAnime.Episode) return;
+
             var guild = client.Guilds.FirstOrDefault(x => x.Id == ac.Guild);
             var channel = guild?.GetChannel(ac.Channel) as ITextChannel;
 
             if (channel == null) return;
-            var message = channel.SendMessageAsync(tags, embed: ac.CreateEmbed(nyaaAnimeObject, parsedAnime)).GetAwaiter().GetResult();
-           
+            var message = channel.SendMessageAsync(tags, embed: ac.CreateEmbed(nyaaTorrentObject, parsedAnime))
+                .GetAwaiter().GetResult();
+
+            ac.alreadyNotified = true;
+
             ac.LatestEpisode = parsedAnime.Episode;
             ac.SetMessage(message);
         }
 
         /// <summary>
-        /// Creates the embed... cool shit.
+        ///     Creates the embed... cool shit.
         /// </summary>
         /// <param name="episode"></param>
-        /// <param name="nyaaAnimeObject"></param>
+        /// <param name="nyaaTorrentObject"></param>
         /// <returns> what? </returns>
-        private static Embed CreateEmbed(this AnimeChannel ac, NyaaAnime nyaaAnimeObject, ParsedAnime parsedAnime)
+        private static Embed CreateEmbed(this AnimeChannel ac, NyaaTorrent nyaaTorrentObject, ParsedAnime parsedAnime)
         {
-            string imageUrl = DuckDuckGoImageSearch.SearchImage($"{parsedAnime.Title} anime")[0];
-
-            string description = "";
+            var imageUrls = DuckDuckGoImageSearch.SearchImage($"{parsedAnime.Title} anime");
+            var imageUrl = imageUrls[Program.Randomizer.Next(imageUrls.Length)];
+            
+            var description = "";
 
             foreach (var quality in typeof(Quality).GetEnumValues().Cast<Quality>().ToArray())
             {
                 if (quality == Quality.Unknown) continue;
-                
+
                 // see if the quality already has a link.
                 var link = ac.QualityLinks.FirstOrDefault(x => x.Key == quality);
-                bool qualityKnown = ac.KnownQualities.Contains(quality);
-                if (link.Value != null)
-                {
-                    description += $"[{quality.ToString()}]({link.Value})\n";
-                }
-                else if (qualityKnown)
-                {
-                    description += $"{quality.ToString()}\n";
-                }
+                var qualityKnown = ac.KnownQualities.Contains(quality);
                 
+                // todo: also add the subgroup that uploaded this.
+                // honestly I am programming myself into a fucking bean here.
+                
+                if (link.Value != null)
+                    description += $"[{quality.ToString()}]({link.Value})\n";
+                else if (qualityKnown) description += $"{quality.ToString()}\n";
             }
-            
-            EmbedBuilder builder = new EmbedBuilder()
+
+            var builder = new EmbedBuilder()
                 .WithTitle($"{parsedAnime.Title.FirstLettersToUpper()} - Ep. {parsedAnime.Episode} has been released!")
-                .AddField("size", nyaaAnimeObject.Size, true)
                 .WithDescription(description)
                 .WithColor(Color.Red)
-                .WithImageUrl(imageUrl)
-                .AddField("Sub group", ac.Anime.Subgroup, true);
+                .AddField(x =>
+                {
+                    x.IsInline = true;
+                    x.Name = "Possible Subgroups";
+                    x.Value = String.Join(", ", ac.AnimePreference.Subgroups);
+                })
+                .WithImageUrl(imageUrl);
 
             return builder.Build();
         }
-        
+
         /// <summary>
-        /// Subscribe the user to this anime, in this channel.
+        ///     Subscribe the user to this anime, in this channel.
         /// </summary>
         /// <param name="user">The user to subscribe.</param>
         /// <returns>true if the user has subscribed, false if the user is already subscribed.</returns>
@@ -168,7 +175,7 @@ namespace qtReminder.Models
         }
 
         /// <summary>
-        /// Check to see if the user is subbed to this anime.
+        ///     Check to see if the user is subbed to this anime.
         /// </summary>
         /// <param name="user">The user to check.</param>
         /// <returns>True or false if the user is subscribed or not.</returns>
@@ -178,10 +185,13 @@ namespace qtReminder.Models
         }
 
         /// <summary>
-        /// Unsubscribe the user from this anime, in this channel.
+        ///     Unsubscribe the user from this anime, in this channel.
         /// </summary>
         /// <param name="user">The user to unsub.</param>
-        /// <returns>True if the unsubbing succeeded, false if the user wasn't subscribed in the first place, or if another error has occurred.</returns>
+        /// <returns>
+        ///     True if the unsubbing succeeded, false if the user wasn't subscribed in the first place, or if another error
+        ///     has occurred.
+        /// </returns>
         public static bool UnsubscribeUser(this AnimeChannel ac, ulong user)
         {
             if (!ac.UserSubscribed(user)) return false;
