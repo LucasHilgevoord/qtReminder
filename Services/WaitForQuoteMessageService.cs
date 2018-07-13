@@ -26,7 +26,7 @@ namespace qtReminder.Services
             
             Task SocketClientOnMessageReceived(SocketMessage socketMessage)
             {
-                if (socketMessage.Channel.Id != channel) return Task.CompletedTask;
+                if (socketMessage.Channel.Id != channel || _socketClient.CurrentUser.Id == socketMessage.Author.Id) return Task.CompletedTask;
 
                 message = socketMessage;
                 foundMessage = true;
