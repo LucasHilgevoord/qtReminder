@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Discord;
+using Discord.WebSocket;
+using Microsoft.Extensions.DependencyInjection;
 using qtReminder.Models;
 
 namespace qtReminder.Nyaa
@@ -49,7 +51,8 @@ namespace qtReminder.Nyaa
         public static async Task<Embed> MakeAnimeSubscriptionEmbed(AnimeChannel anime, IUser user = null)
         {
             var subscribedUsers = new List<string>();
-            var Guild = Program.Client.GetGuild(anime.Guild) as IGuild;
+            var client = Program.ServiceProvider.GetRequiredService<DiscordSocketClient>();
+            var Guild = client.GetGuild(anime.Guild) as IGuild;
 
             foreach (var uID in anime.SubscribedUsers)
             {
@@ -95,7 +98,7 @@ namespace qtReminder.Nyaa
                     }
                     catch (Exception)
                     {
-                        //
+                        // ligma nuts! lole
                     }
                 };
                 await message.AddReactionAsync(new Emoji("🔴"));

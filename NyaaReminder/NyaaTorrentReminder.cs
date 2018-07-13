@@ -25,12 +25,17 @@ namespace qtReminder.Nyaa
 
         public async Task RepeatCheck()
         {
+            
+            // Check constantly
+            
             while (true)
                 try
                 {
+                    
+                    // if there are no subscriptions, wait 30 minutes before checking.
                     if (ReminderOptions.SubscribedAnime.Count == 0)
                     {
-                        await Task.Delay(TimeSpan.FromSeconds(1));
+                        await Task.Delay(TimeSpan.FromMinutes(30));
                         continue;
                     }
 
@@ -41,9 +46,10 @@ namespace qtReminder.Nyaa
                     {
                         var animeChannels = ParseAnimeChannels(recentAnime);
 
+                        // If anime are found, Create ( or update ) the message.
+                        
                         if (animeChannels.Count != 0)
-                            animeChannels.ForEach(x => x.parsedAnimeChannel.AnimeChannel.CreateOrUpdateMessage(Client,
-                                x.NyaaTorrent, x.parsedAnimeChannel.ParsedAnime));
+                            animeChannels.ForEach(x => x.parsedAnimeChannel.AnimeChannel.CreateOrUpdateMessage(Client));
                     }
 
                     TorrentReminderOptions.SaveReminders(OPTIONS_FILENAME, ReminderOptions);
@@ -68,10 +74,9 @@ namespace qtReminder.Nyaa
 
             foreach (var nAnime in list)
             {
-                var parsedTitle = NyaaParser.ParseTitle(nAnime.Title);
+                var parsedTitle = NyaaParser.ParseTitle(nAnime.Title, nAnime.Link);
                 var anime = ReminderOptions.SubscribedAnime.FirstOrDefault(x =>
                     parsedTitle.Title.ToLower().Contains(x.AnimePreference.Name.ToLower()));
-
 
                 // conditions for adding the anime.
                 if (
@@ -83,8 +88,12 @@ namespace qtReminder.Nyaa
                     anime.AnimePreference.Subgroups.All(x => x.ToLower() != parsedTitle.Fangroup.ToLower())) continue;
                 // conditions end.
 
-
-                animeList.Add(new TorrentAndParsedChannel(nAnime, new ParsedAnimeChannel(parsedTitle, anime)));
+                // Add the link
+                anime.UpdateLinks(parsedTitle);
+                
+                // Only add this anime channel if it's not in yet.
+                if(!animeList.Any(x=>x.parsedAnimeChannel.AnimeChannel == anime))
+                    animeList.Add(new TorrentAndParsedChannel(nAnime, new ParsedAnimeChannel(parsedTitle, anime)));
             }
 
             return animeList;
@@ -107,7 +116,10 @@ namespace qtReminder.Nyaa
                 if (node.Name != "item") continue;
 
                 var infoHash = node["nyaa:infoHash"].InnerText;
-
+                
+#if NOCHECK
+                // DONATE UPDATE LAST CHECK FOR DEBUG PURPOSES!!!
+#else
                 // if this torrent entry has already been checked, exit. goodbye.. cunt.
                 if (infoHash == ReminderOptions.LatestChecked)
                     return list;
@@ -118,7 +130,7 @@ namespace qtReminder.Nyaa
                     ReminderOptions.LatestChecked = infoHash;
                     @checked = true;
                 }
-
+#endif
                 var name = node["title"].InnerText;
                 var link = node["guid"].InnerText;
                 var s_seeders = node["nyaa:seeders"].InnerText;

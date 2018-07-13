@@ -4,11 +4,18 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using Discord;
 using Discord.WebSocket;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using qtReminder.ImageSearch;
+using qtReminder.Nyaa;
+using qtReminder.Services;
 
 namespace qtReminder.Models
 {
+    /// <summary>
+    /// An anime channel points to a channel for a specific anime. This includes the preference of quality and
+    /// subgroup
+    /// </summary>
     public class AnimeChannel
     {
         [JsonIgnore] private DateTime _lastMessagePostTime;
@@ -18,27 +25,48 @@ namespace qtReminder.Models
         public ulong Channel;
         public ulong Guild;
         public List<Quality> KnownQualities = new List<Quality>();
-
-        [JsonIgnore] public IUserMessage LastMessage;
-        [JsonIgnore] public bool alreadyNotified;
-
         public int LatestEpisode;
 
-        [JsonIgnore] public List<KeyValuePair<Quality, string>> QualityLinks;
+        /// <summary>
+        /// The actual name of the anime.
+        /// </summary>
+        [JsonIgnore] public string actualName;
+        
+        /// <summary>
+        /// The notification message.
+        /// </summary>
+        [JsonIgnore] public IUserMessage LastMessage;
+        
+        /// <summary>
+        /// List of the quality links. Could've as well been a dict. Why didn't I do that?
+        /// </summary>
+        [JsonIgnore] public Dictionary<Quality, string[]> QualityLinks;
+        
+        /// <summary>
+        /// Link to the image.
+        /// </summary>
+        [JsonIgnore] public string imageLink;
+        
+        /// <summary>
+        /// This bool is used to check if they've already been notified.
+        /// It edits the message if so, and posts a new message if not.
+        /// </summary>
+        [JsonIgnore] public bool alreadyNotified;
 
         public List<ulong> SubscribedUsers = new List<ulong>();
 
-        public void AddQualityLink(Quality quality, string link)
+        public void AddQualityLink(Quality quality, string link, string subgroup)
         {
+            // If the quality links is not yet instantiated, make it.
             if (QualityLinks == null) ResetQualityLinks();
 
             if (QualityLinks.Any(x => x.Key == quality))
             {
-                var index = QualityLinks.FindIndex(x => x.Key == quality);
-                QualityLinks[index] = new KeyValuePair<Quality, string>(quality, link);
+                QualityLinks[quality] = new[] { link, subgroup };
+                return;
             }
 
-            QualityLinks.Add(new KeyValuePair<Quality, string>(quality, link));
+            QualityLinks.Add(quality ,new[] { link, subgroup });
 
             if (KnownQualities.Any(x => x == quality)) return;
 
@@ -47,7 +75,7 @@ namespace qtReminder.Models
 
         public void ResetQualityLinks()
         {
-            QualityLinks = new List<KeyValuePair<Quality, string>>();
+            CreateQualityLinks();
             alreadyNotified = false;
         }
 
@@ -61,12 +89,46 @@ namespace qtReminder.Models
         }
 
         /// <summary>
+        /// Use this function to invalidate this object.
+        /// Invalidating this clears the quality links, and generates a new image.
+        /// </summary>
+        private void Invalidate()
+        {
+            GenerateNewImage();
+            ResetQualityLinks();
+        }
+
+        private void GenerateNewImage()
+        {
+            var imageUrls = DuckDuckGoImageSearch.SearchImage($"{AnimePreference.Name} anime");
+            imageLink = imageUrls[Program.Randomizer.Next(imageUrls.Length)];
+        }
+
+        /// <summary>
         ///     Checks if the message is still valid. (true if newer than 20 minutes)
         /// </summary>
         public bool MessageValid()
         {
             var timespan = DateTime.Now - _lastMessagePostTime;
-            return timespan.TotalMinutes < 20 && LastMessage != null;
+            return timespan.TotalMinutes < 30 && LastMessage != null;
+        }
+
+        private void CreateQualityLinks()
+        {
+            QualityLinks = new Dictionary<Quality, string[]>();
+        }
+
+        /// <summary>
+        /// Update the anime links if it's the same episode,
+        /// if it's a new episode, generate a new image and also clear the link list.
+        /// </summary>
+        /// <param name="parsedAnime"></param>
+        public void UpdateLinks(ParsedAnime parsedAnime)
+        {
+            if (LatestEpisode < parsedAnime.Episode || QualityLinks == null) Invalidate();
+            
+            actualName = parsedAnime.Title; // set anime title
+            AddQualityLink(parsedAnime.Quality, parsedAnime.Link, parsedAnime.Fangroup);
         }
     }
 
@@ -77,18 +139,8 @@ namespace qtReminder.Models
         ///     are subscribed to it.
         /// </summary>
         /// <param name="client">The discord client.</param>
-        public static void CreateOrUpdateMessage(this AnimeChannel ac, DiscordSocketClient client,
-            NyaaTorrent nyaaTorrentObject, ParsedAnime parsedAnime)
+        public static void CreateOrUpdateMessage(this AnimeChannel ac, DiscordSocketClient client)
         {
-            if (ac.LatestEpisode != parsedAnime.Episode && ac.alreadyNotified) ac.ResetQualityLinks();
-
-            ac.AddQualityLink(parsedAnime.Quality, nyaaTorrentObject.Link);
-
-            // If the quality of the torrent is lower than the actual
-            // minimum notify quality, dont beep them.
-            int minimumQuality = (int)ac.AnimePreference.MinQuality;
-            if (minimumQuality > (int) parsedAnime.Quality) return;
-            
             var tags = "";
             foreach (var user in ac.SubscribedUsers) tags += $"<@{user}> ";
 
@@ -98,22 +150,21 @@ namespace qtReminder.Models
             // latest checked episode.
             if (ac.MessageValid())
             {
-                ac.LastMessage?.ModifyAsync(x => { x.Embed = ac.CreateEmbed(nyaaTorrentObject, parsedAnime); });
+                ac.LastMessage?.ModifyAsync(x => { x.Embed = ac.CreateEmbed(); });
                 return;
             }
-
-            if (ac.LatestEpisode >= parsedAnime.Episode) return;
 
             var guild = client.Guilds.FirstOrDefault(x => x.Id == ac.Guild);
             var channel = guild?.GetChannel(ac.Channel) as ITextChannel;
 
             if (channel == null) return;
-            var message = channel.SendMessageAsync(tags, embed: ac.CreateEmbed(nyaaTorrentObject, parsedAnime))
+            var message = channel.SendMessageAsync(tags, embed: ac.CreateEmbed())
                 .GetAwaiter().GetResult();
 
-            ac.alreadyNotified = true;
+            Program.ServiceProvider.GetRequiredService<WaitForQuoteMessageService>()
+                .WaitForMessageInChannel(channel.Id).Wait();
 
-            ac.LatestEpisode = parsedAnime.Episode;
+            ac.alreadyNotified = true;
             ac.SetMessage(message);
         }
 
@@ -123,11 +174,8 @@ namespace qtReminder.Models
         /// <param name="episode"></param>
         /// <param name="nyaaTorrentObject"></param>
         /// <returns> what? </returns>
-        private static Embed CreateEmbed(this AnimeChannel ac, NyaaTorrent nyaaTorrentObject, ParsedAnime parsedAnime)
-        {
-            var imageUrls = DuckDuckGoImageSearch.SearchImage($"{parsedAnime.Title} anime");
-            var imageUrl = imageUrls[Program.Randomizer.Next(imageUrls.Length)];
-            
+        private static Embed CreateEmbed(this AnimeChannel ac)
+        {            
             var description = "";
 
             foreach (var quality in typeof(Quality).GetEnumValues().Cast<Quality>().ToArray())
@@ -138,25 +186,27 @@ namespace qtReminder.Models
                 var link = ac.QualityLinks.FirstOrDefault(x => x.Key == quality);
                 var qualityKnown = ac.KnownQualities.Contains(quality);
                 
-                // todo: also add the subgroup that uploaded this.
-                // honestly I am programming myself into a fucking bean here.
-                
                 if (link.Value != null)
-                    description += $"[{quality.ToString()}]({link.Value})\n";
+                    description += $"[{link.Value[1]} - {quality.ToString()}]({link.Value[0]})\n";
                 else if (qualityKnown) description += $"{quality.ToString()}\n";
             }
 
             var builder = new EmbedBuilder()
-                .WithTitle($"{parsedAnime.Title.FirstLettersToUpper()} - Ep. {parsedAnime.Episode} has been released!")
+                .WithTitle($"{ac.actualName.FirstLettersToUpper()} - Ep. {ac.LatestEpisode} just came out!")
                 .WithDescription(description)
                 .WithColor(Color.Red)
                 .AddField(x =>
                 {
-                    x.IsInline = true;
-                    x.Name = "Possible Subgroups";
-                    x.Value = String.Join(", ", ac.AnimePreference.Subgroups);
+                    // get random quote
+                    var quote = Program.ServiceProvider.GetRequiredService<QuoteService>().GetRandomQuote();
+                    
+                    x.IsInline = false;
+                    string name = string.IsNullOrEmpty(quote.Name) ? "no one" : quote.Name;
+                    string quoteText = string.IsNullOrWhiteSpace(quote.QuoteText) ? "fuck" : quote.QuoteText;
+                    x.Name = $"And as {name} would say";
+                    x.Value = quoteText;
                 })
-                .WithImageUrl(imageUrl);
+                .WithImageUrl(ac.imageLink);
 
             return builder.Build();
         }

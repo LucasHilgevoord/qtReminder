@@ -5,17 +5,19 @@
     /// </summary>
     public struct ParsedAnime
     {
-        public string Title;
-        public Quality Quality;
-        public int Episode;
-        public string Fangroup;
+        public readonly string Title;
+        public readonly Quality Quality;
+        public readonly int Episode;
+        public readonly string Fangroup;
+        public readonly string Link;
 
-        public ParsedAnime(string Title, int Episode, string Fangroup, Quality Quality)
+        public ParsedAnime(string Title, int Episode, string Fangroup, Quality Quality, string Link)
         {
             this.Title = Title;
             this.Quality = Quality;
             this.Episode = Episode;
             this.Fangroup = Fangroup;
+            this.Link = Link;
         }
     }
 

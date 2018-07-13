@@ -3,6 +3,9 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.0</TargetFramework>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DefineConstants>TRACE;DEBUG;NETCOREAPP2_0;NOCHECK</DefineConstants>
+  </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Discord.Net" Version="2.0.0-beta" />
     <PackageReference Include="Discord.Net.Commands" Version="2.0.0-beta" />

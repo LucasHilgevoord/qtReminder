@@ -1,4 +1,5 @@
-﻿using System.Runtime.Serialization;
+﻿using System.Collections.Generic;
+using System.Runtime.Serialization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
@@ -40,6 +41,9 @@ namespace qtReminder.Models
         [JsonProperty("Subgroup")]
         public string[] Subgroups { get; private set; }
 
+        /// <summary>
+        ///     The minimum quality _before announcing_
+        /// </summary>
         [JsonConverter(typeof(StringEnumConverter))]
         public Quality MinQuality { get; set; }
 
@@ -53,12 +57,37 @@ namespace qtReminder.Models
 
     public enum Quality
     {
+        /// <summary>
+        /// 480p quality
+        /// </summary>
         x480 = 0,
         
+        /// <summary>
+        /// 720p quality
+        /// </summary>
         x720 = 1,
         
+        /// <summary>
+        /// 1080p quality
+        /// </summary>
         x1080 = 2,
         
         Unknown = -1
+    }
+    
+    public static class QualityStrings
+    {
+        private static Dictionary<Quality, string> strings = new Dictionary<Quality,string>()
+        {
+            {Quality.x480, "480p"},
+            {Quality.x720, "720p"},
+            {Quality.x1080, "1080p"},
+            {Quality.Unknown, "lmao idk"}
+        };
+
+        public static string GetQualityString(Quality quality)
+        {
+            return strings[quality];
+        }
     }
 }

@@ -10,7 +10,7 @@ namespace qtReminder.Nyaa
         /// </summary>
         /// <param name="title">title of the torrent.</param>
         /// <returns>cool parsed shit</returns>
-        public static ParsedAnime ParseTitle(string title)
+        public static ParsedAnime ParseTitle(string title, string link)
         {
             // TODO: Improve the parser.
             // right now it only works with this format:
@@ -40,7 +40,7 @@ namespace qtReminder.Nyaa
 
             var length = titleEnd - titleStart;
             if (length < 0) length = 1;
-            if (title.Length <= titleStart + length) return new ParsedAnime("", -1, "", Quality.Unknown);
+            if (title.Length <= titleStart + length) return new ParsedAnime("", -1, "", Quality.Unknown, "");
             anime_title = title.Substring(titleStart, length).Trim();
 
 
@@ -59,7 +59,7 @@ namespace qtReminder.Nyaa
                     break;
             }
 
-            return new ParsedAnime(anime_title, episode, fangroup, quality);
+            return new ParsedAnime(anime_title, episode, fangroup, quality, link);
         }
     }
 }
