@@ -12,7 +12,7 @@ namespace qtReminder.Nyaa
     public partial class TorrentReminder
     {
         private const string OPTIONS_FILENAME = "nyaaoptions.json";
-        private readonly double checkingSpeed = 2;
+        private double checkingSpeed = 2;
 
         public TorrentReminder(DiscordSocketClient client)
         {
@@ -47,9 +47,12 @@ namespace qtReminder.Nyaa
                         var animeChannels = ParseAnimeChannels(recentAnime);
 
                         // If anime are found, Create ( or update ) the message.
-                        
+
                         if (animeChannels.Count != 0)
+                        {
+                            Console.WriteLine($"Notifying {animeChannels.Count} channels!");
                             animeChannels.ForEach(x => x.parsedAnimeChannel.AnimeChannel.CreateOrUpdateMessage(Client));
+                        }
                     }
 
                     TorrentReminderOptions.SaveReminders(OPTIONS_FILENAME, ReminderOptions);
@@ -115,19 +118,21 @@ namespace qtReminder.Nyaa
                 var node = childNodes.Item(i);
                 if (node.Name != "item") continue;
 
-                var infoHash = node["nyaa:infoHash"].InnerText;
-                
-#if NOCHECK
+                var dateText = node["pubDate"].InnerText;
+                var date = DateTime.Parse(dateText); 
+#if NOgCHECK
                 Console.WriteLine("Skipping checking.");
 #else
                 // if this torrent entry has already been checked, exit. goodbye.. cunt.
-                if (infoHash == ReminderOptions.LatestChecked)
+                if (date < ReminderOptions.LastCheckedDateTime)
+                {
                     return list;
-
+                }
 
                 if (!@checked)
                 {
-                    ReminderOptions.LatestChecked = infoHash;
+
+                    ReminderOptions.LastCheckedDateTime = date;
                     @checked = true;
                 }
 #endif
