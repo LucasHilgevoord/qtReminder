@@ -113,7 +113,7 @@ namespace qtReminder.Nyaa
             var channel = doc["rss"]["channel"];
             var childNodes = channel.ChildNodes;
             var @checked = false;
-            DateTime afterDate;
+            DateTime? afterDate;
             
             for (var i = 0; i < childNodes.Count; i++)
             {
@@ -157,7 +157,8 @@ namespace qtReminder.Nyaa
                 });
             }
 
-            ReminderOptions.LastCheckedDateTime = afterDate;
+            if(afterDate != null)
+                ReminderOptions.LastCheckedDateTime = (DateTime)afterDate;
             return list;
         }
 
