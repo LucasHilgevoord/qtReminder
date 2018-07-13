@@ -44,7 +44,6 @@ namespace qtReminder.Nyaa
     public class ReminderOptions
     {
         [JsonProperty] public string LatestChecked;
-        [JsonProperty] public DateTime LastCheckedDateTime;
         [JsonProperty] public List<AnimeChannel> SubscribedAnime;
     }
 }

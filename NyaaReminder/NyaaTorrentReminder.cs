@@ -42,6 +42,8 @@ namespace qtReminder.Nyaa
                     var xml = await GetNyaaRSSAsXML();
                     var recentAnime = GetRecentNyaaAnime(xml);
 
+                    var p = DateTime.Parse("Fri, 13 Jul 2018 13:43:42 -0000");
+
                     if (recentAnime.Count != 0)
                     {
                         var animeChannels = ParseAnimeChannels(recentAnime);
@@ -113,31 +115,29 @@ namespace qtReminder.Nyaa
             var channel = doc["rss"]["channel"];
             var childNodes = channel.ChildNodes;
             var @checked = false;
-            DateTime? afterDate = null;
-            
             for (var i = 0; i < childNodes.Count; i++)
             {
                 var node = childNodes.Item(i);
                 if (node.Name != "item") continue;
 
-                var dateText = node["pubDate"].InnerText;
-                var date = DateTime.Parse(dateText); 
-#if NOgCHECK
+
+                var infoHash = node["nyaa:infoHash"].InnerText;
+                
+#if NOCHECK
                 Console.WriteLine("Skipping checking.");
 #else
-                // if this torrent entry has already been checked, exit. goodbye.. cunt.
-                if (date < ReminderOptions.LastCheckedDateTime)
-                {
-                    break;
-                }
+// if this torrent entry has already been checked, exit. goodbye.. cunt.
+                if (infoHash == ReminderOptions.LatestChecked)
+                    return list;
+
 
                 if (!@checked)
                 {
-
-                    afterDate = date;
+                    ReminderOptions.LatestChecked = infoHash;
                     @checked = true;
                 }
 #endif
+                
                 var name = node["title"].InnerText;
                 var link = node["guid"].InnerText;
                 var s_seeders = node["nyaa:seeders"].InnerText;
@@ -157,8 +157,6 @@ namespace qtReminder.Nyaa
                 });
             }
 
-            if(afterDate != null)
-                ReminderOptions.LastCheckedDateTime = (DateTime)afterDate;
             return list;
         }
 
