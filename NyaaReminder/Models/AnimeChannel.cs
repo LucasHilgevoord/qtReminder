@@ -96,6 +96,7 @@ namespace qtReminder.Models
         {
             GenerateNewImage();
             ResetQualityLinks();
+            LatestEpisode++;
         }
 
         private void GenerateNewImage()
