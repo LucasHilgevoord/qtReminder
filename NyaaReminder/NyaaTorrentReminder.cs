@@ -113,6 +113,8 @@ namespace qtReminder.Nyaa
             var channel = doc["rss"]["channel"];
             var childNodes = channel.ChildNodes;
             var @checked = false;
+            DateTime afterDate;
+            
             for (var i = 0; i < childNodes.Count; i++)
             {
                 var node = childNodes.Item(i);
@@ -126,13 +128,13 @@ namespace qtReminder.Nyaa
                 // if this torrent entry has already been checked, exit. goodbye.. cunt.
                 if (date < ReminderOptions.LastCheckedDateTime)
                 {
-                    return list;
+                    break;
                 }
 
                 if (!@checked)
                 {
 
-                    ReminderOptions.LastCheckedDateTime = date;
+                    afterDate = date;
                     @checked = true;
                 }
 #endif
@@ -155,6 +157,7 @@ namespace qtReminder.Nyaa
                 });
             }
 
+            ReminderOptions.LastCheckedDateTime = afterDate;
             return list;
         }
 
