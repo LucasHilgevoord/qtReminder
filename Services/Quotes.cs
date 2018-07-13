@@ -21,13 +21,11 @@ namespace qtReminder.Nyaa
         {
             try
             {
-                if (!File.Exists(FILENAME)) File.CreateText(FILENAME).Dispose();
-
                 string quoteCutShort = quote.Split('\n')[0];
                 string newline =
                     $"{guildid.ToString()} {userid.ToString()} {quoteCutShort.Substring(0, Math.Clamp(quoteCutShort.Length, 0, 100))}\n";
                 
-                File.WriteAllText(FILENAME, newline);
+                File.AppendAllText(FILENAME, newline);
             }
             catch(Exception) {/**/}
         }
