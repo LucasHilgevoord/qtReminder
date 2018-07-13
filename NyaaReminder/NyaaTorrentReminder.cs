@@ -118,7 +118,7 @@ namespace qtReminder.Nyaa
                 var infoHash = node["nyaa:infoHash"].InnerText;
                 
 #if NOCHECK
-                // DONATE UPDATE LAST CHECK FOR DEBUG PURPOSES!!!
+                Console.WriteLine("Skipping checking.");
 #else
                 // if this torrent entry has already been checked, exit. goodbye.. cunt.
                 if (infoHash == ReminderOptions.LatestChecked)
