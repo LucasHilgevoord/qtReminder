@@ -23,7 +23,7 @@ namespace qtReminder.Nyaa
             TorrentReminderOptions.SaveReminders(OPTIONS_FILENAME, ReminderOptions, true);
         }
         
-        [Command("subscribe"), Alias("sub")]
+        [Command("unsubscribe"), Alias("unsub")]
         public async Task UnsubscribeUser([Remainder] string text)
         {
             if (Context.Guild == null)
