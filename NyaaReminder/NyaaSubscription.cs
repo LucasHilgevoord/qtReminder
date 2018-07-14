@@ -144,7 +144,7 @@ namespace qtReminder.Nyaa
             // check if this server is subscribed to this anime
             // if not, what the fuck are you doing here? Fucking balbino. Stupid fucking idiot.
 
-            if (ReminderOptions.SubscribedAnime.Count != 0)
+            if (ReminderOptions.SubscribedAnime.Count == 0)
             {
                 await channel.SendMessageAsync(
                     "There are no subscriptions anywhere. You fucking braindead idiot. Fuck you.");
