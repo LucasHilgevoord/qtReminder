@@ -154,7 +154,7 @@ namespace qtReminder.Nyaa
             foreach (var anime in ReminderOptions.SubscribedAnime)
             {
                 if (anime.Guild != channel.GuildId || anime.Channel != channel.Id ||
-                    !anime.AnimePreference.Name.ToLower().Contains(animeTitle)) return;
+                    !anime.AnimePreference.Name.ToLower().Contains(animeTitle)) continue;
 
                 anime.UnsubscribeUser(user.Id);
 
