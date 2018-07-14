@@ -42,10 +42,9 @@ namespace qtReminder.Models
         /// </summary>
         [JsonIgnore] public Dictionary<Quality, string[]> QualityLinks;
         
-        /// <summary>
-        /// Link to the image.
-        /// </summary>
-        [JsonIgnore] public string imageLink;
+        [JsonIgnore] public string thisImage;
+        [JsonIgnore] public QuoteService.Quote thisQuote;
+        [JsonIgnore] public int thisEpisode;
         
         /// <summary>
         /// This bool is used to check if they've already been notified.
@@ -96,13 +95,25 @@ namespace qtReminder.Models
         {
             GenerateNewImage();
             ResetQualityLinks();
+            GenerateQuote();
             LatestEpisode++;
         }
 
         private void GenerateNewImage()
         {
             var imageUrls = DuckDuckGoImageSearch.SearchImage($"{AnimePreference.Name} anime");
-            imageLink = imageUrls[Program.Randomizer.Next(imageUrls.Length)];
+            thisImage = imageUrls[Program.Randomizer.Next(imageUrls.Length)];
+        }
+
+        private void GenerateQuote()
+        {
+            // get random quote
+            var quote = Program.ServiceProvider.GetRequiredService<QuoteService>().GetRandomQuote();
+                    
+            string name = string.IsNullOrEmpty(quote.Name) ? "no one" : quote.Name;
+            string quoteText = string.IsNullOrWhiteSpace(quote.QuoteText) ? "fuck" : quote.QuoteText;
+            
+            thisQuote = new QuoteService.Quote(name, quoteText);
         }
 
         /// <summary>
@@ -130,6 +141,7 @@ namespace qtReminder.Models
             
             actualName = parsedAnime.Title; // set anime title
             AddQualityLink(parsedAnime.Quality, parsedAnime.Link, parsedAnime.Fangroup);
+            thisEpisode = parsedAnime.Episode;
         }
     }
 
@@ -193,21 +205,16 @@ namespace qtReminder.Models
             }
 
             var builder = new EmbedBuilder()
-                .WithTitle($"{ac.actualName.FirstLettersToUpper()} - Ep. {ac.LatestEpisode} just came out!")
+                .WithTitle($"{ac.actualName.FirstLettersToUpper()} - Ep. {ac.thisEpisode} just came out!")
                 .WithDescription(description)
                 .WithColor(Color.Red)
                 .AddField(x =>
                 {
-                    // get random quote
-                    var quote = Program.ServiceProvider.GetRequiredService<QuoteService>().GetRandomQuote();
-                    
                     x.IsInline = false;
-                    string name = string.IsNullOrEmpty(quote.Name) ? "no one" : quote.Name;
-                    string quoteText = string.IsNullOrWhiteSpace(quote.QuoteText) ? "fuck" : quote.QuoteText;
-                    x.Name = $"And as {name} would say";
-                    x.Value = quoteText;
+                    x.Name = $"And as {ac.thisQuote.Name} would say";
+                    x.Value = ac.thisQuote.QuoteText;
                 })
-                .WithImageUrl(ac.imageLink);
+                .WithImageUrl(ac.thisImage);
 
             return builder.Build();
         }

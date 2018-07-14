@@ -115,6 +115,8 @@ namespace qtReminder.Nyaa
             var channel = doc["rss"]["channel"];
             var childNodes = channel.ChildNodes;
             var @checked = false;
+            string checkInfoHash = ReminderOptions.LatestChecked;
+            
             for (var i = 0; i < childNodes.Count; i++)
             {
                 var node = childNodes.Item(i);
@@ -123,13 +125,12 @@ namespace qtReminder.Nyaa
 
                 var infoHash = node["nyaa:infoHash"].InnerText;
                 
-#if NOCHECK
+#if NOCCHECK
                 Console.WriteLine("Skipping checking.");
 #else
 // if this torrent entry has already been checked, exit. goodbye.. cunt.
-                if (infoHash == ReminderOptions.LatestChecked)
+                if (infoHash == checkInfoHash)
                     return list;
-
 
                 if (!@checked)
                 {
