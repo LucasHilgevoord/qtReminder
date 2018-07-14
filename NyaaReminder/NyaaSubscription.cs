@@ -153,16 +153,23 @@ namespace qtReminder.Nyaa
 
             foreach (var anime in ReminderOptions.SubscribedAnime)
             {
-                if (anime.Guild != channel.GuildId ||
+                if (anime.Guild != channel.GuildId || anime.Channel != channel.Id ||
                     !anime.AnimePreference.Name.ToLower().Contains(animeTitle)) return;
 
                 anime.UnsubscribeUser(user.Id);
 
                 if (anime.SubscribedUsers.Count == 0) ReminderOptions.SubscribedAnime.Remove(anime);
 
-                await channel.SendMessageAsync(
-                    $"{user.Mention} You have been unsubscribed from receiving new notifications when a new episode of " +
-                    $"{anime.AnimePreference.Name} goes online!");
+                var message = await channel.SendMessageAsync(
+                    $"{user.Mention} You have been unsubscribed from " +
+                    $"{anime.AnimePreference.Name}\n\n\nFucking asshole.");
+
+                await Task.Factory.StartNew(async () =>
+                {
+                    await Task.Delay(1500);
+                    await message.ModifyAsync(x => x.Content = $"{user.Mention} You have been unsubscribed from " +
+                                                         $"{anime.AnimePreference.Name}");
+                });
             }
         }
     }
