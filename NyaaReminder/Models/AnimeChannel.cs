@@ -138,10 +138,27 @@ namespace qtReminder.Models
         public void UpdateLinks(ParsedAnime parsedAnime)
         {
             if (LatestEpisode < parsedAnime.Episode || QualityLinks == null) Invalidate();
+            if (!ShouldAddLink(parsedAnime)) return;
             
             actualName = parsedAnime.Title; // set anime title
             AddQualityLink(parsedAnime.Quality, parsedAnime.Link, parsedAnime.Fangroup);
             thisEpisode = parsedAnime.Episode;
+        }
+
+        /// <summary>
+        /// Checks if the link should be added.
+        /// Right now it only does it based on sub group. Lowest first.
+        /// </summary>
+        private bool ShouldAddLink(ParsedAnime parsedAnime)
+        {
+            if (!QualityLinks.TryGetValue(parsedAnime.Quality, out var array)) return true;
+            
+            int currentSubgroup = AnimePreference.Subgroups.ToList().FindIndex(x => array[1].ToLower() == x.ToLower());
+            int newSubgroup = AnimePreference.Subgroups.ToList()
+                .FindIndex(x => parsedAnime.Fangroup.ToLower() == x.ToLower());
+
+            return newSubgroup < currentSubgroup;
+
         }
     }
 
