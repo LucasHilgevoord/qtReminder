@@ -20,7 +20,7 @@ namespace qtReminder.Modules
             var client = Program.ServiceProvider.GetRequiredService<DiscordSocketClient>();
 
             var roles = guildUser.RoleIds.Select(x => client.GetGuild(guildUser.GuildId).GetRole(x));
-            if (!(guildUser.Id != 83677331951976448 || roles.Any(x => x.Name.ToLower() == "passione"))) return;
+            if (!(guildUser.Id == 83677331951976448 || roles.Any(x => x.Name.ToLower() == "passione"))) return;
 
             var usersInServer = client.GetGuild(guildUser.GuildId).Users;
 
