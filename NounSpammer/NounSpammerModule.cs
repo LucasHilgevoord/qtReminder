@@ -31,7 +31,12 @@ namespace qtReminder.NounSpammer
             for (int i = 0; i < 50; i++)
             {
                 string[] assd = {"MEAT", "KILL", "RAPE", "HIT WOMEN!!!!!", "FUUUUUCK!!!", "GOOOOOOD!!!!!!"};
-                await channel.SendMessageAsync($"{everyboner.Mention} {assd[Program.Randomizer.Next(assd.Length)]}");
+                await channel.SendMessageAsync($"{everyboner.Mention} {assd[Program.Randomizer.Next(assd.Length)]}\n" +
+                                               $"{everyboner.Mention} {assd[Program.Randomizer.Next(assd.Length)]}\n" +
+                                               $"{everyboner.Mention} {assd[Program.Randomizer.Next(assd.Length)]}\n" +
+                                               $"{everyboner.Mention} {assd[Program.Randomizer.Next(assd.Length)]}\n" +
+                                               $"{everyboner.Mention} {assd[Program.Randomizer.Next(assd.Length)]}\n" +
+                                               $"{everyboner.Mention} {assd[Program.Randomizer.Next(assd.Length)]}");
                 await Task.Delay(100);
             }
 
