@@ -70,9 +70,9 @@ namespace qtReminder.NounSpammer
                             .GetChannel(message.Channel.Id) as SocketTextChannel;
 
                         everyboner = channel.Guild.Roles.First(x => x.Name.ToLower() == "everyboner");
+                        
+                        Program.ServiceProvider.GetService<DiscordSocketClient>().MessageReceived -= WaitForWord;
                     }
-
-                    Program.ServiceProvider.GetService<DiscordSocketClient>().MessageReceived -= WaitForWord;
                 }
 
                 Program.ServiceProvider.GetService<DiscordSocketClient>().MessageReceived += WaitForWord;
