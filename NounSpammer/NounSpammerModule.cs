@@ -1,8 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using System.Net;
-using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using Discord;
@@ -14,12 +12,12 @@ namespace qtReminder.NounSpammer
 {
     public class NounSpammerModule : ModuleBase
     {
-        private bool enabled = false;
-        private bool cyclingWords;
-        private string randomNoun = "";
-        private ulong guildid = 172734552119312384;
-        private SocketTextChannel channel;
-        private IRole everyboner;
+        private static bool enabled = false;
+        private static bool cyclingWords;
+        private static string randomNoun = "";
+        private static ulong guildid = 172734552119312384;
+        private static SocketTextChannel channel;
+        private static IRole everyboner;
         
         public async Task Spam()
         {
@@ -51,6 +49,7 @@ namespace qtReminder.NounSpammer
 
             enabled = true;
             randomNoun = GetRandomSong();
+            Console.WriteLine(randomNoun);
             
             await Task.Factory.StartNew(async () =>
             {
@@ -83,6 +82,7 @@ namespace qtReminder.NounSpammer
                         {
                             await Task.Delay(TimeSpan.FromDays(1));
                             randomNoun = GetRandomSong();
+                            Console.WriteLine(randomNoun);
                             await Wait();
                         }
 
