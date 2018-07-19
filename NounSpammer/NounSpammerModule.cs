@@ -37,7 +37,7 @@ namespace qtReminder.NounSpammer
                                                $"{everyboner.Mention} {assd[Program.Randomizer.Next(assd.Length)]}\n" +
                                                $"{everyboner.Mention} {assd[Program.Randomizer.Next(assd.Length)]}\n" +
                                                $"{everyboner.Mention} {assd[Program.Randomizer.Next(assd.Length)]}");
-                await Task.Delay(100);
+                await Task.Delay(800);
             }
 
             enabled = false;
