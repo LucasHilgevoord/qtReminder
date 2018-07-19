@@ -1,6 +1,8 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using Discord;
@@ -16,7 +18,7 @@ namespace qtReminder.NounSpammer
         private static bool cyclingWords;
         private static string randomNoun = "";
         private static ulong guildid = 172734552119312384;
-        private static SocketTextChannel channel;
+        private SocketTextChannel channel;
         private static IRole everyboner;
         
         public async Task Spam()
