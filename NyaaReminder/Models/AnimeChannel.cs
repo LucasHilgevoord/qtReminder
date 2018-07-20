@@ -97,6 +97,7 @@ namespace qtReminder.Models
             ResetQualityLinks();
             GenerateQuote();
             LatestEpisode++;
+            alreadyNotified = false;
         }
 
         private void GenerateNewImage()
@@ -184,10 +185,10 @@ namespace qtReminder.Models
                 return;
             }
 
-            var guild = client.Guilds.FirstOrDefault(x => x.Id == ac.Guild);
-            var channel = guild?.GetChannel(ac.Channel) as ITextChannel;
+            if (ac.alreadyNotified) return;
 
-            if (channel == null) return;
+            var guild = client.Guilds.FirstOrDefault(x => x.Id == ac.Guild);
+            if (!(guild?.GetChannel(ac.Channel) is ITextChannel channel)) return;
             var message = channel.SendMessageAsync(tags, embed: ac.CreateEmbed())
                 .GetAwaiter().GetResult();
 
