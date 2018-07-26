@@ -39,10 +39,26 @@ namespace qtReminder
             var client = ServiceProvider.GetRequiredService<DiscordSocketClient>();
 
             client.Log += LogAsync;
+            client.UserLeft += async user =>
+            {
+                    await user.Guild?.DefaultChannel?.SendMessageAsync($"{user?.Username} left {user?.Guild?.Name} 🙁");
+            };
+
+            client.Disconnected += async (c) =>
+            {
+                while (client.ConnectionState != ConnectionState.Connected)
+                {
+                    await client.StartAsync();
+                    await Task.Delay(TimeSpan.FromSeconds(30));
+                }
+
+            };
+            
             ServiceProvider.GetRequiredService<CommandService>().Log += LogAsync;
             
             await client.LoginAsync(TokenType.Bot, (string) settings.token, true);
             await client.StartAsync();
+            
             while (client.ConnectionState != ConnectionState.Connected) await Task.Delay(1);
 
             Console.WriteLine("Logged in...");

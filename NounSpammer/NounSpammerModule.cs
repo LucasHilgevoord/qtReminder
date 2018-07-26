@@ -23,21 +23,15 @@ namespace qtReminder.NounSpammer
         
         public async Task Spam()
         {
-            await channel.SendMessageAsync($"YOU DUMBASS!!! YOU TRIGGERED THE SECRET WORD, {randomNoun.ToUpper()}!!! ");
-            await Task.Delay(200);
-            await channel.SendMessageAsync($"YOU'RE FUCKING STUPID!!!!!! DUMB NIGGA.");
-            await Task.Delay(200);
+            await channel.SendMessageAsync($"YOU DUMBASS!!! YOU TRIGGERED THE SECRET WORD, **{randomNoun.ToUpper()}!!!** ");
+            await Task.Delay(800);
+            await channel.SendMessageAsync($"YOU'RE FUCKING STUPID!!!!!! DUMBASS!!!!!!!!!");
+            await Task.Delay(800);
             
-            for (int i = 0; i < 50; i++)
+            for (int i = 0; i < 12; i++)
             {
-                string[] assd = {"MEAT", "KILL", "RAPE", "HIT WOMEN!!!!!", "FUUUUUCK!!!", "GOOOOOOD!!!!!!"};
-                await channel.SendMessageAsync($"{everyboner.Mention} {assd[Program.Randomizer.Next(assd.Length)]}\n" +
-                                               $"{everyboner.Mention} {assd[Program.Randomizer.Next(assd.Length)]}\n" +
-                                               $"{everyboner.Mention} {assd[Program.Randomizer.Next(assd.Length)]}\n" +
-                                               $"{everyboner.Mention} {assd[Program.Randomizer.Next(assd.Length)]}\n" +
-                                               $"{everyboner.Mention} {assd[Program.Randomizer.Next(assd.Length)]}\n" +
-                                               $"{everyboner.Mention} {assd[Program.Randomizer.Next(assd.Length)]}");
-                await Task.Delay(800);
+                await channel.SendMessageAsync($"{everyboner.Mention}");
+                await Task.Delay(1200);
             }
 
             enabled = false;

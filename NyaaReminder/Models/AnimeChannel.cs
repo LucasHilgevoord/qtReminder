@@ -75,7 +75,6 @@ namespace qtReminder.Models
         public void ResetQualityLinks()
         {
             CreateQualityLinks();
-            alreadyNotified = false;
         }
 
         /// <summary>
