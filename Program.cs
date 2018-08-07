@@ -46,8 +46,12 @@ namespace qtReminder
 
             client.Disconnected += async (c) =>
             {
+                Console.WriteLine("Disconnected! Going to try and reconnect!");
+                    
                 while (client.ConnectionState != ConnectionState.Connected)
                 {
+                    Console.WriteLine("Trying to reconnect...");
+                    
                     try
                     {
                         await client.StartAsync();
