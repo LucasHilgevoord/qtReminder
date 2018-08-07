@@ -48,7 +48,15 @@ namespace qtReminder
             {
                 while (client.ConnectionState != ConnectionState.Connected)
                 {
-                    await client.StartAsync();
+                    try
+                    {
+                        await client.StartAsync();
+                    }
+                    catch (Exception)
+                    {
+                        Console.WriteLine("Could not log in... trying again in 30 seconds.");
+                    }
+
                     await Task.Delay(TimeSpan.FromSeconds(30));
                 }
 
