@@ -36,38 +36,6 @@ namespace qtReminder.Nyaa
 
             TorrentReminderOptions.SaveReminders(OPTIONS_FILENAME, ReminderOptions, true);
         }
-        
-        public async Task ReceiveNyaaMessage([Remainder] string text)
-        {
-            var subCommand = SubscribeCommand(text);
-
-            if (subCommand.Item1 == -1) return;
-
-            // Check if the channel the message was sent in is public.
-            if (Context.Guild == null)
-            {
-                await ReplyAsync("no");
-                return;
-            }
-
-            var user = Context.User;
-            var textChannel = Context.Channel as ITextChannel;
-            
-            switch (subCommand.Item1)
-            {
-                case 1:
-                    await SubscribeToAnime(subCommand.Item2.ToLower(), user, textChannel);
-                    break;
-                case 0:
-                    await UnsubscribeToAnime(subCommand.Item2.ToLower(), user, textChannel);
-                    break;
-                default:
-                    await ReplyAsync(" what you dumbass? ");
-                    break;
-            }
-
-            TorrentReminderOptions.SaveReminders(OPTIONS_FILENAME, ReminderOptions, true);
-        }
 
         public async Task ReceiveReaction(Cacheable<IUserMessage, ulong> a, ISocketMessageChannel b,
             SocketReaction reaction)

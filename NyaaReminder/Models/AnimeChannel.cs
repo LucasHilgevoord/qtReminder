@@ -269,9 +269,7 @@ namespace qtReminder.Models
         /// </returns>
         public static bool UnsubscribeUser(this AnimeChannel ac, ulong user)
         {
-            if (!ac.UserSubscribed(user)) return false;
-
-            return ac.SubscribedUsers.Remove(user);
+            return ac.UserSubscribed(user) && ac.SubscribedUsers.Remove(user);
         }
     }
 }

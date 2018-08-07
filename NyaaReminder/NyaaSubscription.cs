@@ -156,7 +156,12 @@ namespace qtReminder.Nyaa
                 if (anime.Guild != channel.GuildId || anime.Channel != channel.Id ||
                     !anime.AnimePreference.Name.ToLower().Contains(animeTitle)) continue;
 
-                anime.UnsubscribeUser(user.Id);
+                bool succeeded = anime.UnsubscribeUser(user.Id);
+
+                if (!succeeded)
+                {
+                    await channel.SendMessageAsync("Fuck! Something went wrong, I don't know what, though.");
+                }
 
                 if (anime.SubscribedUsers.Count == 0) ReminderOptions.SubscribedAnime.Remove(anime);
 
