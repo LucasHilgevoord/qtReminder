@@ -175,6 +175,8 @@ namespace qtReminder.Nyaa
                     await message.ModifyAsync(x => x.Content = $"{user.Mention} You have been unsubscribed from " +
                                                          $"{anime.AnimePreference.Name}");
                 });
+
+                return;
             }
         }
     }
