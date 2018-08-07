@@ -178,6 +178,11 @@ namespace qtReminder.Nyaa
 
                 return;
             }
+
+            await channel.SendMessageAsync(
+                $"{user.Mention} You are not subscribed to this anime, braindead fucking idiot.");
+            await Task.Delay(TimeSpan.FromSeconds(15));
+            await channel.SendMessageAsync($"{user.Mention} noob.");
         }
     }
 }
