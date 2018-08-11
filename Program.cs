@@ -41,29 +41,7 @@ namespace qtReminder
             client.Log += LogAsync;
             client.UserLeft += async user =>
             {
-                    await user.Guild?.DefaultChannel?.SendMessageAsync($"{user?.Username} left {user?.Guild?.Name} 🙁");
-            };
-
-            client.Disconnected += async (c) =>
-            {
-                Console.WriteLine("Disconnected! Going to try and reconnect!");
-                    
-                while (client.ConnectionState != ConnectionState.Connected)
-                {
-                    Console.WriteLine("Trying to reconnect...");
-                    
-                    try
-                    {
-                        await client.StartAsync();
-                    }
-                    catch (Exception)
-                    {
-                        Console.WriteLine("Could not log in... trying again in 30 seconds.");
-                    }
-
-                    await Task.Delay(TimeSpan.FromSeconds(30));
-                }
-
+                    await user?.Guild?.DefaultChannel?.SendMessageAsync($"{user?.Username} left {user?.Guild?.Name} 🙁");
             };
             
             ServiceProvider.GetRequiredService<CommandService>().Log += LogAsync;
