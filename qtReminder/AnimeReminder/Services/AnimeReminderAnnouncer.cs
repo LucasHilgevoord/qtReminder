@@ -149,8 +149,7 @@ namespace qtReminder.AnimeReminder.Services
             string imageLink = null;
             try
             {
-                var images = ContextWebsearch.FindImages(announceModel.AnimeGuildModel.AnimeTitle.RomajiTitle)
-                    .GetAwaiter().GetResult();
+                var images = DuckDuckGoImageSearch.SearchImage(announceModel.AnimeGuildModel.AnimeTitle.RomajiTitle);
                 imageLink = images[Program.Randomizer.Next(images.Length)];
             }
             catch (Exception e)
