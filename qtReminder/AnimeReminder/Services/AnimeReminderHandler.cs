@@ -1,0 +1,122 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using qtReminder.AnimeReminder.Models;
+using qtReminder.AnimeReminder.Nyaa;
+
+namespace qtReminder.AnimeReminder.Services
+{
+    /// <summary>
+    /// Handles the checking of the anime.
+    /// </summary>
+    public static class AnimeReminderHandler
+    {
+        private static bool _checkingStarted = false;
+        
+        // The time how long the checker will wait before checking Nyaa.si
+        private static double _waitTime = 5.0;
+
+        // The min and max wait time. 
+        // When the checker finds someting, it sets the wait time to the lowest value.
+        // Then everytime it doesn't find something again, it sets that value back up by increments of
+        // WaitTimeIncrement. This will hopefully cause minimal overhead for the RSS server
+        // But still provides fast updates in times that it needs it.
+        private const double MaxWaitTime = 5.0;
+        private const double MinWaitTime = 0.5;
+        private const double WaitTimeIncrement = 0.5;
+        
+        public static void StartCheck()
+        {
+            if (_checkingStarted) return;
+
+            Task.Factory.StartNew(async () => await WaitCheck())
+                .ConfigureAwait(false);
+
+            _checkingStarted = true;
+        }
+
+        private static async Task WaitCheck()
+        {
+            while (true)
+            {
+                bool result = await Check();
+
+                if (result) 
+                    _waitTime = MinWaitTime;
+                else if (_waitTime > MaxWaitTime) 
+                    _waitTime = Math.Min(MaxWaitTime, _waitTime + WaitTimeIncrement);
+                
+                await Task.Delay(TimeSpan.FromMinutes(_waitTime));
+            }
+        }
+        
+        /// <summary>
+        /// Performs the actual check for the anime
+        /// </summary>
+        /// <returns>true if something has been found</returns>
+        public static async Task<bool> Check()
+        {
+            // get the XML, and parse it
+            var xml = await NyaaRSSFeed.GetRSSFeed();
+            var parsedXML = NyaaXMLConverter.ParseXML(xml);
+            NyaaTorrentModel[] rawTorrents = NyaaXMLConverter.GetTorrents(parsedXML);
+            ParsedNyaaTorrentModel[] parsedTorrents = NyaaParser.ParseNyaaTorrents(rawTorrents);
+            
+            string lastChecked = Database.Database.GetLastChecked();
+            
+            // get ALL EPIC ANIME
+            var (_, collection) = Database.Database.GetDatabaseAndSubscriptionCollection();
+
+            var guildAnimes = collection.FindAll().ToList();
+            var animeToAnnounce = new List<AnnounceModel>();
+
+            bool foundSomething = false;
+            
+            foreach (var parsedTorrent in parsedTorrents)
+            {
+                // if the title is correct, add it to the update list.
+                var validAnime = guildAnimes.Where(x =>
+                {
+                    bool valid = true;
+
+                    const double minSim = 0.6;
+                    valid =
+                           (x.AnimeTitle.EnglishTitle.GetSimilarity(parsedTorrent.AnimeTitle) > minSim)
+                        || (x.AnimeTitle.RomajiTitle.GetSimilarity(parsedTorrent.AnimeTitle) > minSim);
+
+                    valid = valid && parsedTorrent.Episode >= x.LastAnnouncedEpisode;
+                    
+                    return valid;
+                });
+
+                foreach (var anime in validAnime)
+                {
+                    var m = new AnnounceModel()
+                    {
+                        AnimeGuildModel = anime,
+                        Episode = parsedTorrent.Episode
+                    };
+                    
+                    if(parsedTorrent.Quality != Quality.Unknown)
+                        m.QualityLinks[parsedTorrent.Quality] = new SubgroupTorrentLink(parsedTorrent.NyaaTorrentModel.Link,
+                            parsedTorrent.SubGroup);
+
+                    if(animeToAnnounce.All(x => x.AnimeGuildModel.AnimeID != anime.AnimeID))
+                        animeToAnnounce.Add(m);
+                    AnimeReminderAnnouncer.UpdateAnime(m);
+                    collection.Update(anime);
+
+                    foundSomething = true;
+                }
+            }
+
+            foreach (var anime in animeToAnnounce)
+            {
+                AnimeReminderAnnouncer.Announce(anime);
+            }
+
+            return foundSomething;
+        }
+    }
+}

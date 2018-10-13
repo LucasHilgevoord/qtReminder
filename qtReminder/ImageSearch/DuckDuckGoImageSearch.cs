@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 
 namespace qtReminder.ImageSearch
 {
-    public class DuckDuckGoImageSearch
+    public static class DuckDuckGoImageSearch
     {
         /// <summary>
         ///     Requires Python 2 for Mac OS and Linux. (Check if you can run it using "python -v" in the commandline)

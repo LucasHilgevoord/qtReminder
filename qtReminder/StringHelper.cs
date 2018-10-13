@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using F23.StringSimilarity;
 
 namespace qtReminder
 {
@@ -15,6 +16,12 @@ namespace qtReminder
         {
             var date = DateTime.Now;
             return $"[{date.Day}/{date.Month}/{date.Year.ToString().Substring(2)} {date.Hour}:{date.Minute}]";
+        }
+
+        public static double GetSimilarity(this string s1, string s2)
+        {
+            var sim = new JaroWinkler();
+            return sim.Similarity(s1, s2);
         }
     }
 }
