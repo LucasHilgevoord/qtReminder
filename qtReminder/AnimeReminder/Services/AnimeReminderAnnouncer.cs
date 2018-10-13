@@ -22,7 +22,7 @@ namespace qtReminder.AnimeReminder.Services
             if (!AnnouncedAnime.TryGetValue(model.AnimeGuildModel.AnimeID, out var anime)) return;
 
             if (anime.AnnouncedMessage != null)
-                AnnounceEdit(model).Wait();
+                AnnounceEdit(anime).Wait();
             else if(model.Episode > model.AnimeGuildModel.LastAnnouncedEpisode && anime.AnnouncedMessage == null) AnnounceNew(model).Wait();
         }
         
