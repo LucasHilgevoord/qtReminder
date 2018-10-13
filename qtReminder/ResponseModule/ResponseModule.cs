@@ -49,7 +49,7 @@ namespace qtReminder.ResponseModule
         public static async Task OnReactionAdded(Cacheable<IUserMessage, ulong> message, 
             ISocketMessageChannel channel, SocketReaction reaction)
         {
-            if (!(channel is IGuildChannel guildChannel)) return;
+            if (!reaction.User.IsSpecified || reaction.User.Value.IsBot || !(channel is IGuildChannel guildChannel)) return;
 
             var xxx = guildUserWaiterList;
             var candidates = guildUserWaiterList
@@ -79,7 +79,8 @@ namespace qtReminder.ResponseModule
         {
             // cannot wait for messages in channel
             if (!(message.Channel is IGuildChannel guildChannel)) return;
-
+            if (message.Author.IsBot) return;
+            
             var xxx = guildUserWaiterList;
             var candidates = guildUserWaiterList
                 .Where(x => x.GuildId == guildChannel.GuildId && 
