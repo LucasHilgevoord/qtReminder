@@ -85,6 +85,8 @@ namespace qtReminder.AnimeReminder.Services
                            (x.AnimeTitle.EnglishTitle.GetSimilarity(parsedTorrent.AnimeTitle) > minSim)
                         || (x.AnimeTitle.RomajiTitle.GetSimilarity(parsedTorrent.AnimeTitle) > minSim);
 
+                    valid = valid && x.WantedSubgroupTitle.Contains(parsedTorrent.SubGroup);
+
                     valid = valid && parsedTorrent.Episode >= x.LastAnnouncedEpisode;
                     
                     return valid;

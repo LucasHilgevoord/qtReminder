@@ -32,8 +32,8 @@ namespace qtReminder.AnimeReminder.Nyaa
             
             return new ParsedNyaaTorrentModel
             {
-                AnimeTitle = title,
-                SubGroup = subgroup,
+                AnimeTitle = title ?? "",
+                SubGroup = subgroup ?? "",
                 Episode = episode,
                 NyaaTorrentModel = model,
                 Quality = quality
