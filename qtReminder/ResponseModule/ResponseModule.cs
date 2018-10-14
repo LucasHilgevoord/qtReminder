@@ -51,10 +51,9 @@ namespace qtReminder.ResponseModule
         {
             if (!reaction.User.IsSpecified || reaction.User.Value.IsBot || !(channel is IGuildChannel guildChannel)) return;
 
-            var xxx = guildUserWaiterList;
             var candidates = guildUserWaiterList
                 .Where(x => x.GuildId == guildChannel.GuildId
-                            && x.IsReactionWaiter).ToList();
+                            && x.IsReactionWaiter && x.ParentMessage.Id == message.Id).ToList();
 
             if (candidates.Count == 0) return;
 

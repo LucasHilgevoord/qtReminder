@@ -107,6 +107,7 @@ namespace qtReminder.AnimeReminder.Commands
                         return false;
                     }, anim, false);
 
+                guildUserWaiter.ParentMessage = succeedMessage;
                 ResponseModule.ResponseModule.AddWaiter(guildUserWaiter);
             }
             else
