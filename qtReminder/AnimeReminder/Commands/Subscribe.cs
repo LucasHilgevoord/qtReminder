@@ -129,7 +129,7 @@ namespace qtReminder.AnimeReminder.Commands
                 .WithFooter("Click the ❤️ to subscribe to this anime as well 😁!");
 
 
-            var users = string.Join("",GetSubscribedUsers(agm.SubscribedUsers, message.Author.Id));
+            var users = string.Join(" ",GetSubscribedUsers(agm.SubscribedUsers, message.Author.Id));
             if (string.IsNullOrEmpty(users)) users = "Hmmm... It's just you!";
             embedBuilder.AddField(x =>
             {
