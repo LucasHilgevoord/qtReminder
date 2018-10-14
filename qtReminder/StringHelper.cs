@@ -20,7 +20,7 @@ namespace qtReminder
 
         public static double GetSimilarity(this string s1, string s2)
         {
-            
+            if (s1 == null || s2 == null) return 0; 
             var sim = new F23.StringSimilarity.Jaccard();
             return sim.Similarity(s1, s2);
         }
