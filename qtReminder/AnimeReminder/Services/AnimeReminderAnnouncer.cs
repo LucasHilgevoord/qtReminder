@@ -134,7 +134,7 @@ namespace qtReminder.AnimeReminder.Services
         {
             var title = announceModel.AnimeGuildModel.AnimeTitle;
             var embedBuilder = new EmbedBuilder()
-                .WithTitle($"Episode {announceModel.AnimeGuildModel.LastAnnouncedEpisode} of {title.EnglishTitle ?? title.RomajiTitle} just came out!");
+                .WithTitle($"Episode {announceModel.Episode} of {title.EnglishTitle ?? title.RomajiTitle} just came out!");
 
             var links = new StringBuilder();
 
