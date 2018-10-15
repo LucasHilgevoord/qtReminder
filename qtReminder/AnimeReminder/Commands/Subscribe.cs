@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -74,6 +75,7 @@ namespace qtReminder.AnimeReminder.Commands
             var anim = new AnimeGuildModel()
             {
                 AnimeID = animeList[n].ID,
+                Anime = animeList[n],
                 AnimeTitle = animeList[n].Title,
                 Guild = ((IGuildChannel) message.Channel).GuildId,
                 Channel = message.Channel.Id,
@@ -133,11 +135,32 @@ namespace qtReminder.AnimeReminder.Commands
             if (string.IsNullOrEmpty(users)) users = "Hmmm... It's just you!";
             embedBuilder.AddField(x =>
             {
-                x.IsInline = false;
+                x.IsInline = true;
                 x.Name = "Also subscribed";
-                x.Value = $@"{users}";
+                x.Value = $"{users}";
             });
-            
+
+            var a = agm.Anime;
+            if (a.NextAiringEpisode?.AiringAt != null)
+            {
+                // ReSharper disable once PossibleInvalidOperationException
+                int b = a.NextAiringEpisode.Value.AiringAt.Value;
+
+                var dateTime = new DateTime(1970, 1, 1)
+                    .AddSeconds(b);
+                
+                
+                embedBuilder.AddField(x =>
+                {
+                    var e = a.NextAiringEpisode.Value.Episode;
+                    
+                    x.IsInline = true;
+                    x.Name = $"Next Episode{(e.HasValue ? $": {e.Value.ToString()}" : "")}";
+                    x.Value = $"{dateTime.DayOfWeek.ToString()} ({dateTime.Day} " +
+                              $"{CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(dateTime.Month)})";
+                });
+            }
+
             return embedBuilder.Build();
         }
 

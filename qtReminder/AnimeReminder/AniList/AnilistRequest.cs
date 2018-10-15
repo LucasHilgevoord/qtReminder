@@ -29,6 +29,12 @@ namespace qtReminder.AnimeReminder.AniList
         romaji
         english
         }}
+        
+        nextAiringEpisode {{
+            airingAt
+            episode
+        }}
+    
     }}
 }}}}
 ";
