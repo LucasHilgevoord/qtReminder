@@ -114,7 +114,7 @@ namespace qtReminder.AnimeReminder.Commands
             }
             else
             {
-                await ReplyAsync($"{message.Author.Mention} Hmm... It seems like you have already been subbed to this anime. You braindead or something?");
+                await ReplyAsync($"{message.Author.Mention} ばか！　(´-ω-`). You already subscribed to {anim.AnimeTitle.EnglishTitle ?? anim.AnimeTitle.RomajiTitle}.");
             }
             
             return true;
