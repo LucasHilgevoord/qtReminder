@@ -107,7 +107,6 @@ namespace qtReminder.AnimeReminder.Services
                     if(!animeToAnnounce.Any(x => x.AnimeGuildModel.AnimeID == anime.AnimeID))
                         animeToAnnounce.Add(m);
                     AnimeReminderAnnouncer.UpdateAnime(m);
-                    collection.Update(anime);
 
                     foundSomething = true;
                 }
@@ -116,6 +115,9 @@ namespace qtReminder.AnimeReminder.Services
             foreach (var anime in animeToAnnounce)
             {
                 AnimeReminderAnnouncer.Announce(anime);
+                anime.AnimeGuildModel.LastAnnouncedEpisode = anime.Episode;
+                collection.Update(anime.AnimeGuildModel);
+
             }
 
             return foundSomething;
