@@ -88,10 +88,13 @@ namespace qtReminder.AnimeReminder.Services
                 {
                     bool valid = true;
 
-                    const double minSim = 0.6;
-                    valid =
-                           (x.AnimeTitle.EnglishTitle.GetSimilarity(parsedTorrent.AnimeTitle) > minSim)
-                        || (x.AnimeTitle.RomajiTitle.GetSimilarity(parsedTorrent.AnimeTitle) > minSim);
+                    const double minSim = 0.55;
+                    
+                    double confidence = Math.Max(
+                        x.AnimeTitle.EnglishTitle.ToLower().GetSimilarity(parsedTorrent.AnimeTitle.ToLower()),
+                        x.AnimeTitle.RomajiTitle.ToLower().GetSimilarity(parsedTorrent.AnimeTitle.ToLower()));
+                    
+                    valid = confidence >= minSim;
 
                     valid = valid && x.WantedSubgroupTitle.Contains(parsedTorrent.SubGroup.ToLower());
 
