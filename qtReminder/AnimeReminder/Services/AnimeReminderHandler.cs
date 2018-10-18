@@ -91,8 +91,8 @@ namespace qtReminder.AnimeReminder.Services
                     const double minSim = 0.55;
                     
                     double confidence = Math.Max(
-                        x.AnimeTitle.EnglishTitle.ToLower().GetSimilarity(parsedTorrent.AnimeTitle.ToLower()),
-                        x.AnimeTitle.RomajiTitle.ToLower().GetSimilarity(parsedTorrent.AnimeTitle.ToLower()));
+                        (x.AnimeTitle.EnglishTitle ?? "").ToLower().GetSimilarity((parsedTorrent.AnimeTitle ?? "").ToLower()),
+                        x.AnimeTitle.RomajiTitle.ToLower().GetSimilarity((parsedTorrent.AnimeTitle ?? "").ToLower()));
                     
                     valid = confidence >= minSim;
 
