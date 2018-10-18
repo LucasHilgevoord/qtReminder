@@ -40,15 +40,23 @@ namespace qtReminder.AnimeReminder.Services
         {
             while (true)
             {
-                bool result = await Check();
+                try
+                {
+                    bool result = await Check();
 
-                if (result) 
-                    _waitTime = MinWaitTime;
-                else if (_waitTime > MaxWaitTime) 
-                    _waitTime = Math.Min(MaxWaitTime, _waitTime + WaitTimeIncrement);
+                    if (result) 
+                        _waitTime = MinWaitTime;
+                    else if (_waitTime > MaxWaitTime) 
+                        _waitTime = Math.Min(MaxWaitTime, _waitTime + WaitTimeIncrement);                
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                }
                 
                 await Task.Delay(TimeSpan.FromMinutes(_waitTime));
             }
+            // ReSharper disable once FunctionNeverReturns FIRE AND FORGET METHOD.
         }
         
         /// <summary>
