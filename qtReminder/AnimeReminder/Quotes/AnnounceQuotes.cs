@@ -12,7 +12,7 @@ namespace qtReminder.AnimeReminder.Quotes
         public static  void AddQuoteWaiter(AnimeGuildModel model)
         {
             ResponseModule.ResponseModule.AddWaiter(new GuildUserWaiter(
-                model.Guild, 0, QuoteMessageReceived, WaitsForOwner:false, @params: model));
+                model.Guild, 0, QuoteMessageReceived, WaitsForOwner:false, @params: model, DeleteOnSuccess:false));
         }
 
         private static async Task<bool> QuoteMessageReceived(SocketMessage socketMessage, object rawmodel)
