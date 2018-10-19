@@ -20,6 +20,11 @@ namespace qtReminder.AnimeReminder.Database
             return (database, database.GetCollection<AnimeGuildModel>("subscribers"));
         }
 
+        public static LiteCollection<QuoteModel> GetQuotes()
+        {
+            return GetDatabase().GetCollection<QuoteModel>("quotes");
+        }
+
         // FOR SOME REASON I STORE THE LAST CHECKED NYAA VALUES IN THIS DATABASE!
         // I really prefer this method instead of doing it with a JSON file because
         // I hate working with JSON. I hope that is enough reason to do it this way.

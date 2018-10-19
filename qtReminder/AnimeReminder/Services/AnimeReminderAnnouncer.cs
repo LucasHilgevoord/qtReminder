@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -39,6 +40,8 @@ namespace qtReminder.AnimeReminder.Services
             
             var message = await channel.SendMessageAsync(mentions, embed:embed);
             AnnouncedAnime[model.AnimeGuildModel.AnimeID].AnnouncedMessage = message;
+            
+            Quotes.AnnounceQuotes.AddQuoteWaiter(model.AnimeGuildModel);
 
         }
 
@@ -155,6 +158,16 @@ namespace qtReminder.AnimeReminder.Services
             catch (Exception e)
             {
                 Console.WriteLine(e);
+            }
+
+            var quote = Quotes.AnnounceQuotes.GetRandomQuote(announceModel.AnimeGuildModel.Guild);
+            if (quote != null)
+            {
+                embedBuilder.AddField(x =>
+                {
+                    x.Name = $"Wise words of {quote.Author}";
+                    x.Value = quote.Message;
+                });
             }
 
             if (imageLink != null) embedBuilder.ImageUrl = imageLink;
