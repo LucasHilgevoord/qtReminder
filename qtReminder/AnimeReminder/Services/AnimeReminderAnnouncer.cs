@@ -23,7 +23,7 @@ namespace qtReminder.AnimeReminder.Services
             if (!AnnouncedAnime.TryGetValue(model.AnimeGuildModel.AnimeID, out var anime)) return;
 
             if (anime.AnnouncedMessage != null)
-                AnnounceEdit(anime).Wait();
+                AnnounceEdit(anime).ConfigureAwait(false);
             else if(model.Episode > model.AnimeGuildModel.LastAnnouncedEpisode && anime.AnnouncedMessage == null) AnnounceNew(model).Wait();
         }
         
@@ -47,7 +47,10 @@ namespace qtReminder.AnimeReminder.Services
 
         private static async Task AnnounceEdit(AnnounceModel announceModel)
         {
+            var originalEmbed = announceModel.AnnouncedMessage.Embeds.First();
             var embed = CreateEmbed(announceModel);
+
+            embed = originalEmbed.ToEmbedBuilder().WithDescription(embed.Description).Build();
 
             if (!AnnouncedAnime.TryGetValue(announceModel.AnimeGuildModel.AnimeID, out var model) ||
                 model.AnnouncedMessage == null) return;

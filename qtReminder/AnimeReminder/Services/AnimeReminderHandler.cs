@@ -69,9 +69,18 @@ namespace qtReminder.AnimeReminder.Services
             var xml = await NyaaRSSFeed.GetRSSFeed();
             var parsedXML = NyaaXMLConverter.ParseXML(xml);
             NyaaTorrentModel[] rawTorrents = NyaaXMLConverter.GetTorrents(parsedXML);
-            ParsedNyaaTorrentModel[] parsedTorrents = NyaaParser.ParseNyaaTorrents(rawTorrents);
             
             string lastChecked = Database.Database.GetLastChecked();
+            
+            ParsedNyaaTorrentModel[] parsedTorrents = NyaaParser.ParseNyaaTorrents(rawTorrents)
+                .TakeWhile(x=>x.NyaaTorrentModel.InfoHash != lastChecked).ToArray();
+                       
+            // if the list is empty, return false.
+            if (parsedTorrents.Length == 0) return false;
+           
+            // set the lastChecked to the first occurence fiaojfoiasoi jdsfjsdoif doisf 
+            Database.Database.SetLastChecked(parsedTorrents[0].NyaaTorrentModel.InfoHash);
+            
             
             // get ALL EPIC ANIME
             var (_, collection) = Database.Database.GetDatabaseAndSubscriptionCollection();
