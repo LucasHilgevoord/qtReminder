@@ -18,7 +18,7 @@ namespace qtReminder.AnimeReminder.Quotes
         private static async Task<bool> QuoteMessageReceived(SocketMessage socketMessage, object rawmodel)
         {
             if (!(rawmodel is AnimeGuildModel model)) return true; // couldn't add, end waiter and continue.
-            if (socketMessage.Channel.Id != model.Channel) return false;
+            if (socketMessage.Channel.Id != model.Channel || string.IsNullOrEmpty(socketMessage.Content)) return false;
             
             var q = Database.Database.GetQuotes();
             string message = socketMessage.Content;
@@ -37,7 +37,7 @@ namespace qtReminder.AnimeReminder.Quotes
         public static Quote GetRandomQuote(ulong guild)
         {
             var client = Program.ServiceProvider.GetRequiredService<DiscordSocketClient>();
-            var q = Database.Database.GetQuotes().Find(x => x.GuildOrigin == guild);
+            var q = Database.Database.GetQuotes().Find(x => x.GuildOrigin == guild).Where(x=>x.Message != null);
 
             var list = q.ToList();
             if (list.Count == 0) return null;
