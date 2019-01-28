@@ -50,9 +50,14 @@ namespace qtReminder.AnimeReminder.Database
             var c = Database.GetDatabaseAndSubscriptionCollection();
             bool success = true;
             
-            success = animeGuildModel.SubscribedUsers.Length == 0 ? 
-                c.collection.Delete(animeGuildModel.AnimeID) : 
-                c.collection.Update(animeGuildModel);
+            if (animeGuildModel.SubscribedUsers.Length == 0)
+            {
+                success = c.collection.Delete(animeGuildModel.Id);
+            }
+            else
+            {
+                success = c.collection.Update(animeGuildModel);
+            }
 
             return success;
         }

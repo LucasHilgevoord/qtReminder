@@ -29,8 +29,10 @@ namespace qtReminder.AnimeReminder.Commands
             string anime = text.ToLower();
             
             // get all anime in this guild and from this user.
-            var guildAnimeCollection = Database.Database.GetDatabaseAndSubscriptionCollection()
-                .collection.Find(x => 
+            var col = Database.Database.GetDatabaseAndSubscriptionCollection().collection;
+            var asd = col.FindAll().ToList();
+            var guildAnimeCollection = asd
+                .Where(x => 
                     x.Guild == Context.Guild.Id && 
                     x.SubscribedUsers.Contains(Context.User.Id)                  
                     ).ToList();

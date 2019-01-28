@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using qtReminder.AnimeReminder.Models;
@@ -42,11 +43,13 @@ namespace qtReminder.AnimeReminder.AniList
 ""search""     : ""{searchQuery}"",
 ""perPage""    : ""10"",
 ""page""       : ""1""
-".Replace("\n","");
+".Replace(Environment.NewLine,"");
                 
+                string content = $@"{{""query"": ""{query.Replace(Environment.NewLine, " ")}"", ""variables"":{{{variables}}}}}";
+
                 var m = new HttpRequestMessage
                 {
-                    Content = new StringContent($@"{{""query"": ""{query.Replace("\n", " ")}"", ""variables"":{{{variables}}}}}", Encoding.UTF8,
+                    Content = new StringContent(content, Encoding.UTF8,
                         "application/json")
                 };
 
