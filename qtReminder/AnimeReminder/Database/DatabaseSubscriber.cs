@@ -40,5 +40,21 @@ namespace qtReminder.AnimeReminder.Database
             
             return success;
         }
+
+        public static bool UnsubscribeFromAnime(ref AnimeGuildModel animeGuildModel, ulong userId)
+        {
+            animeGuildModel.SubscribedUsers = 
+                animeGuildModel.SubscribedUsers.ToList().Where(x=>x != userId)
+                    .ToArray();
+
+            var c = Database.GetDatabaseAndSubscriptionCollection();
+            bool success = true;
+            
+            success = animeGuildModel.SubscribedUsers.Length == 0 ? 
+                c.collection.Delete(animeGuildModel.AnimeID) : 
+                c.collection.Update(animeGuildModel);
+
+            return success;
+        }
     }
 }
