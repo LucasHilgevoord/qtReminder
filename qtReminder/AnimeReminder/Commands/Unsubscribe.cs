@@ -88,6 +88,11 @@ namespace qtReminder.AnimeReminder.Commands
                 await ReplyAsync($"{Context.User.Mention}, oh no! Something went wrong.");
                 return false;
             }
+
+            await ReplyAsync(
+                $"{Context.User.Mention}. You have unsubscribed from {a.AnimeTitle.EnglishTitle ?? a.AnimeTitle.RomajiTitle}!");
+            
+            return true;
         }
     }
 }
