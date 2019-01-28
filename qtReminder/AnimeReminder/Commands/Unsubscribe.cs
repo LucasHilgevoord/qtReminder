@@ -45,8 +45,8 @@ namespace qtReminder.AnimeReminder.Commands
             
             // get the candidates
             var unsubCandidates = guildAnimeCollection.Where(x =>
-                x.AnimeTitle.EnglishTitle.ToLower().Contains(anime) ||
-                x.AnimeTitle.RomajiTitle.ToLower().Contains(anime)).Take(10).ToList();
+                (x.AnimeTitle.EnglishTitle ?? x.AnimeTitle.RomajiTitle).ToLower().Contains(anime))
+                .Take(10).ToList();
 
             if (unsubCandidates.Count == 0)
             {
