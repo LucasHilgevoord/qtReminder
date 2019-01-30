@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace qtReminder.Modules.Commands
 {
-    public class HelpCommand : ModuleBase<CommandContext>
+    public class HelpCommand : ModuleBase<SocketCommandContext>
     {
         [Command("help")]
         public async Task Help()
