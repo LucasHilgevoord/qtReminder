@@ -25,7 +25,8 @@ namespace qtReminder.AnimeReminder.Commands
         /// This function will look for the anime,
         /// and then subscribe to the WaiterModule that waits for their message.
         /// </summary>
-        [Command("sub"), Alias("s", "subscribe")]
+        [Command("sub"), Alias("s", "subscribe"),
+        Remarks("Subscribe to an anime. Usage: $sub {anime name}")]
         public async Task SubscribeToAnime([Remainder] string args)
         {
             
@@ -106,7 +107,7 @@ namespace qtReminder.AnimeReminder.Commands
                             Console.WriteLine(e);
                         }
 
-                        return false;
+                        return false; 
                     }, anim, false);
 
                 guildUserWaiter.ParentMessage = succeedMessage;

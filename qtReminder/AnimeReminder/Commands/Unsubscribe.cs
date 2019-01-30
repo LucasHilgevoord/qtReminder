@@ -14,7 +14,8 @@ namespace qtReminder.AnimeReminder.Commands
 {
     public class Unsubscribe : ModuleBase<SocketCommandContext>
     {
-        [Command("unsub"), Alias("unsubscribe", "u")]
+        [Command("unsub"), Alias("unsubscribe", "u"),
+        Remarks("Unsubscribe from those awful anime you once liked")]
         public async Task Unsub([Remainder] string text)
         {
             // This command can only be used within guilds.

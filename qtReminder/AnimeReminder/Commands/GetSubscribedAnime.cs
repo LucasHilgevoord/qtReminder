@@ -7,7 +7,8 @@ namespace qtReminder.AnimeReminder.Commands
 {
     public class GetSubscribedAnime : ModuleBase<SocketCommandContext>
     {
-        [Command("subs"), Alias("subscriptions")]
+        [Command("subs"), Alias("subscriptions"),
+        Remarks("Get all anime you're subscribed to.")]
         public async Task GetAnime()
         {
             var d = Database.Database.GetDatabaseAndSubscriptionCollection();
@@ -16,6 +17,12 @@ namespace qtReminder.AnimeReminder.Commands
             // think it's odd that im doing this.
             var subbedAnimeCollection = d.collection.Find(x => x.Guild == Context.Guild.Id
                                                                && x.SubscribedUsers.ToList().Contains(Context.User.Id)).ToList();
+
+            if (subbedAnimeCollection.Count == 0)
+            {
+                await ReplyAsync("You're not subscribed to any anime, at least, in this server.");
+                return;
+            }
             
             var stringBuilder = new StringBuilder("Your subscribed anime:\n");
 
