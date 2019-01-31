@@ -124,7 +124,8 @@ namespace qtReminder.AnimeReminder.Services
                         m.QualityLinks[parsedTorrent.Quality] = new SubgroupTorrentLink(parsedTorrent.NyaaTorrentModel.Link,
                             parsedTorrent.SubGroup);
 
-                    if(!animeToAnnounce.Any(x => x.AnimeGuildModel.AnimeID == anime.AnimeID))
+                    if(!animeToAnnounce.Any(x => x.AnimeGuildModel.AnimeID == anime.AnimeID && 
+                                                 animeToAnnounce.Any(y=>y.AnimeGuildModel.Guild == x.AnimeGuildModel.Guild)))
                         animeToAnnounce.Add(m);
                     AnimeReminderAnnouncer.UpdateAnime(m);
 
